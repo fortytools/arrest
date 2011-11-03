@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.name        = "arrest"
   s.version     = Arrest::VERSION
   s.authors     = ["Axel Tetzlaff"]
-  s.email       = ["axel.tetzlaff@gmx.de"]
+  s.email       = ["axel.tetzlaff@fortytools.com"]
   s.homepage    = ""
   s.summary     = %q{Another ruby rest client}
   s.description = %q{Consume a rest API in a AR like fashion}

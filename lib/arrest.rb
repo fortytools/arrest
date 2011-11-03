@@ -1,9 +1,18 @@
 require "arrest/version"
 
+require "arrest/http_source"
+require "arrest/mem_source"
+require "arrest/abstract_resource"
+require "arrest/root_resource"
+require "arrest/rest_child"
+
 module Arrest
-  autoload :AbstractResource
-  autoload :RestChild
-  autoload :RootResource
-  autoload :MemSource
-  autoload :HttpSource
+
+  class Source 
+  
+    cattr_accessor :source
+
+  end
+  Source.source= MemSource.new
+
 end

@@ -15,13 +15,7 @@ module Arrest
 
       def find id
         r = source().get "#{self.resource_path}/#{id}"
-        # TODO morgner-hack!!
-        if source().is_a?(HttpSource)
-          puts "Morgner-Haeck"
-          body = body_root(r)[0]
-        else
-          body = body_root(r)
-        end
+        body = body_root(r)
         self.build body
       end
 
