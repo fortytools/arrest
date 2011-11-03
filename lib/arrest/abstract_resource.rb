@@ -13,7 +13,7 @@ module Arrest
 
       def body_root response
         all = JSON.parse response
-        all["results"]
+        all["result"]
       end
 
       def build hash
@@ -21,7 +21,7 @@ module Arrest
       end
 
       def resource_name
-        self.name.downcase.pluralize
+        self.name.sub(/.*:/,'').downcase.pluralize
       end
     end
 

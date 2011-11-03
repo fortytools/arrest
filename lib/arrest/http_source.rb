@@ -5,8 +5,17 @@ module Arrest
       @base = base
     end
 
+    def add_headers headers
+      puts "FOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"
+      headers['X-SplinkUser'] = '0'
+      headers['Content-Type'] = 'application/json'
+    end
+
     def get sub
-      response = self.connection().get sub 
+      response = self.connection().get do |req|
+        req.url sub
+        add_headers req.headers
+      end
       response.body
     end
 
@@ -18,7 +27,7 @@ module Arrest
 
       response = self.connection().put do |req|
         req.url "#{rest_resource.class.path}/#{rest_resource.id}"
-        req.headers['Content-Type'] = 'application/json'
+        add_headers req.headers
         req.body = hash.to_json
       end
       response.env[:status] == 200
@@ -31,7 +40,7 @@ module Arrest
       
       response = self.connection().post do |req|
         req.url rest_resource.class.path
-        req.headers['Content-Type'] = 'application/json'
+        add_headers req.headers
         req.body = hash.to_json
       end
       location = response.env[:response_headers][:location]
