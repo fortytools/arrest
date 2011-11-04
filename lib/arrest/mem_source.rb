@@ -22,7 +22,7 @@ module Arrest
 
     def get sub
       idx = sub.rindex(/\/[0-9]*$/)
-      if idx.present?
+      if idx
         ps = [sub[0..(idx-1)], sub[(idx+1)..sub.length]]
       else
         ps = [sub]
@@ -30,7 +30,7 @@ module Arrest
       val = traverse @@data,ps
       if val.is_a?(Hash)
         wrap collection_json(val.values), val.length
-      elsif val.blank?
+      elsif val == nil
         wrap "{}", 0
       else
         wrap val.to_hash.to_json, 1
@@ -49,7 +49,7 @@ module Arrest
         return hash
       end
       key = keys.first
-      if hash.blank?
+      if hash == nil
         nil
       else
         traverse hash[key.to_s],keys.drop(1)
@@ -59,14 +59,14 @@ module Arrest
 
     def put rest_resource
       @@data[rest_resource.resource_path()][rest_resource.id.to_s] = rest_resource
-      raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id.present?
+      raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       rest_resource
     end
 
     def post rest_resource
       raise "new object must have setter for id" unless rest_resource.respond_to?(:id=)
-      raise "new object must not have id" if rest_resource.respond_to?(:id) && rest_resource.id.present?
-      if @@data[rest_resource.resource_path()].present?
+      raise "new object must not have id" if rest_resource.respond_to?(:id) && rest_resource.id != nil
+      if @@data[rest_resource.resource_path()] != nil
         last_id = @@data[rest_resource.resource_path()].values.map(&:id).sort.last
       else
         last_id = 42
@@ -77,7 +77,7 @@ module Arrest
         next_id = "#{last_id}x"
       end
       rest_resource.id = next_id
-      unless @@data[rest_resource.resource_path()].present?
+      unless @@data[rest_resource.resource_path()] != nil
         @@data[rest_resource.resource_path()] = {}
       end
       @@data[rest_resource.resource_path()][next_id.to_s] = rest_resource

@@ -20,7 +20,7 @@ module Arrest
     end
 
     def put rest_resource
-      raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id.present?
+      raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       hash = rest_resource.to_hash
       hash.delete(:id)
       hash.delete("id")
@@ -35,7 +35,7 @@ module Arrest
 
     def post rest_resource
       raise "new object must have setter for id" unless rest_resource.respond_to?(:id=)
-      raise "new object must not have id" if rest_resource.respond_to?(:id) && rest_resource.id.present?
+      raise "new object must not have id" if rest_resource.respond_to?(:id) && rest_resource.id != nil
       hash = rest_resource.to_hash
       
       response = self.connection().post do |req|

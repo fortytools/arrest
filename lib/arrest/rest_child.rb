@@ -1,7 +1,8 @@
 module Arrest
   class RestChild < AbstractResource
     attr_accessor :parent
-    def initialize parent
+    def initialize parent, h
+      super h
       @parent = parent
     end
 
@@ -11,8 +12,13 @@ module Arrest
         "#{parent.location}/#{self.resource_name}"
       end
 
+      def build parent, hash
+        self.new parent, hash
+      end
+
 
       def all_for parent
+        raise "Parent has no id yet" unless parent.id
         body_root(source().get self.resource_path_for(parent)).map do |h|
           self.build(parent, h)
         end
