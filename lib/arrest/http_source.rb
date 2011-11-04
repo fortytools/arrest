@@ -26,7 +26,7 @@ module Arrest
       hash.delete("id")
 
       response = self.connection().put do |req|
-        req.url "#{rest_resource.class.path}/#{rest_resource.id}"
+        req.url rest_resource.location
         add_headers req.headers
         req.body = hash.to_json
       end
@@ -39,7 +39,7 @@ module Arrest
       hash = rest_resource.to_hash
       
       response = self.connection().post do |req|
-        req.url rest_resource.class.path
+        req.url rest_resource.class.resource_path
         add_headers req.headers
         req.body = hash.to_json
       end

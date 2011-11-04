@@ -8,7 +8,9 @@ module Arrest
       end
 
       def all
-        body_root(source().get self.resource_path).map do |h|
+        body = body_root(source().get self.resource_path)
+        body ||= []
+        body.map do |h|
           self.build h
         end
       end

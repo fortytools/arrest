@@ -16,7 +16,7 @@ module Arrest
       "{
         \"queryTime\" : \"0.01866644\",
         \"resultCount\" : #{count},
-        \"results\" : #{content} }"
+        \"result\" : #{content} }"
 
     end
 
