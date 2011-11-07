@@ -57,9 +57,15 @@ module Arrest
     end
 
 
-    def put rest_resource
-      @@data[rest_resource.resource_path()][rest_resource.id.to_s] = rest_resource
+    def delete rest_resource
       raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
+      @@data[rest_resource.resource_path()].delete(rest_resource.id.to_s) 
+      rest_resource
+    end
+
+    def put rest_resource
+      raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
+      @@data[rest_resource.resource_path()][rest_resource.id.to_s] = rest_resource
       rest_resource
     end
 

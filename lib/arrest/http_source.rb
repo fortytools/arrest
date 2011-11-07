@@ -1,3 +1,5 @@
+require 'faraday'
+
 module Arrest
   class HttpSource
 
@@ -6,9 +8,9 @@ module Arrest
     end
 
     def add_headers headers
-      puts "FOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"
-      headers['X-SplinkUser'] = '0'
-      headers['Content-Type'] = 'application/json'
+      Arrest::Source.header_decorator.headers.each_pair do |k,v|
+        headers[k.to_s] = v.to_s
+      end
     end
 
     def get sub
@@ -17,6 +19,15 @@ module Arrest
         add_headers req.headers
       end
       response.body
+    end
+
+    def delete rest_resource
+      raise "To delete an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
+      response = self.connection().delete do |req|
+        req.url rest_resource.location
+        add_headers req.headers
+      end
+      response.env[:status] == 200
     end
 
     def put rest_resource

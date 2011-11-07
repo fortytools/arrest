@@ -109,5 +109,9 @@ module Arrest
       end
     end
 
+    def delete
+      AbstractResource::source().delete self
+    end
+
   end
 end

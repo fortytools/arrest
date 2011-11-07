@@ -51,6 +51,25 @@ class FirstTest < Test::Unit::TestCase
     assert_equal new_zoo.name, zoo_reloaded.name
   end
 
+  def test_delete
+    zoo_count_before = Zoo.all.length
+    new_zoo = Zoo.new({:name => "Foo"})
+    new_zoo.save
+    zoo_count_after = Zoo.all.length
+
+    assert_equal (zoo_count_before + 1), zoo_count_after
+    assert new_zoo.id != nil
+
+    zoo_the_last = Zoo.all.last
+    assert_equal new_zoo.name, zoo_the_last.name
+
+    zoo_reloaded = Zoo.find(new_zoo.id)
+    assert_equal new_zoo.name, zoo_reloaded.name
+    
+    zoo_reloaded.delete
+    assert_equal zoo_count_before, Zoo.all.length
+  end
+
   def test_create_and_load
     zoo_count_before = Zoo.all.length
     new_zoo = Zoo.new({:name => "Foo"})
