@@ -17,7 +17,7 @@ module Arrest
       def mod=(mod=nil)
         if mod == nil
           @mod = Kernel
-        elsif mod.is_a(Module)
+        elsif mod.is_a?(Module)
           @mod = mod
         else
           raise "Expected module but got #{mod.class.name}"
