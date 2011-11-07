@@ -48,11 +48,18 @@ module Arrest
       raise "new object must have setter for id" unless rest_resource.respond_to?(:id=)
       raise "new object must not have id" if rest_resource.respond_to?(:id) && rest_resource.id != nil
       hash = rest_resource.to_hash
+      hash.delete(:id)
+      hash.delete('id')
+
+      hash.delete_if{|k,v| v == nil}
       
+      puts "URL:#{rest_resource.class.resource_path}"
+      body = hash.to_json
+      puts "Body:#{body}"
       response = self.connection().post do |req|
         req.url rest_resource.class.resource_path
         add_headers req.headers
-        req.body = hash.to_json
+        req.body = body
       end
       location = response.env[:response_headers][:location]
       id = location.gsub(/^.*\//, '')
