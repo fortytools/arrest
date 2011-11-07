@@ -1,5 +1,6 @@
 require "arrest/version"
 
+require "arrest/source"
 require "arrest/http_source"
 require "arrest/mem_source"
 require "arrest/abstract_resource"
@@ -7,25 +8,6 @@ require "arrest/root_resource"
 require "arrest/rest_child"
 
 module Arrest
-
-  class Source 
-    class << self
-      attr_reader :source
-
-      def source=(host=nil)
-        if host == nil || host.blank?
-          @source = MemSource.new
-        else
-          @source = HttpSource.new host 
-        end
-        @source
-      end
-
-    end
-  end
- 
-
-
 
   String.class_eval do
 

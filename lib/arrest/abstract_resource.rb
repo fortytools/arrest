@@ -35,7 +35,7 @@ module Arrest
           end
         end
         send :define_method, method_name do
-         Kernel.const_get(clazz_name.classify).all_for self
+         Arrest::Source.mod.const_get(clazz_name.classify).all_for self
         end
       end
 
@@ -66,7 +66,7 @@ module Arrest
         attributes "#{name}_id".to_sym
         send :define_method, name do
           val = self.instance_variable_get("@#{name}_id")
-          SGDB.module_eval(name.classify).find(val)
+          Arrest::Source.mod.const_get(name.classify).find(val)
         end
       end
     end
