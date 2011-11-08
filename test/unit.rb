@@ -2,19 +2,17 @@ require 'arrest'
 require 'test/unit'
 
 class Zoo < Arrest::RootResource
-
   attributes :name
-
   has_many :animals
-
 end
 
 class Animal < Arrest::RestChild
-
   attributes :kind, :age
-
   parent :zoo
+end
 
+class SpecialZoo < Zoo
+  attributes :is_magic
 end
 
 class FirstTest < Test::Unit::TestCase
@@ -137,10 +135,20 @@ class FirstTest < Test::Unit::TestCase
 
     animal_retry = new_zoo.animals.last
     assert_equal animal_kind, animal_retry.kind
-
-
-
   end
 
+  def test_inheritance
+    puts "is i upper:#{'i'.is_upper?} is I upper#{'I'.is_upper?}"
+    puts "isMagic".underscore
+    new_zoo = SpecialZoo.new({:name => "Foo", :is_magic => true})
+    new_zoo.save
+
+    assert new_zoo.id != nil, "Zoo must have id after save"
+    puts "fields #{SpecialZoo.all_fields}"
+    zoo_reloaded = SpecialZoo.find(new_zoo.id)
+    assert_equal true, zoo_reloaded.is_magic
+    assert_equal "Foo", zoo_reloaded.name
+
+  end
 end
 

@@ -38,6 +38,23 @@ module Arrest
       self == nil || self == ""
     end
 
+    def is_upper?
+      self == self.upcase
+    end
+
+    def underscore
+      res = ""
+      self.each_char do |c|
+        if res != "" && c.is_upper?
+          res << '_'
+          res << c.downcase
+        else
+          res << c
+        end
+      end
+      res
+    end
+
     def classify(upper_first = true)
       result = ""
       upperNext = false

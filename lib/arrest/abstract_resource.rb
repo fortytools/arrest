@@ -16,7 +16,11 @@ module Arrest
       end
 
       def build hash
-        self.new hash
+        underscored_hash = {}
+        hash.each_pair do |k, v|
+          underscored_hash[k.underscore] = v
+        end
+        self.new underscored_hash
       end
 
       def resource_name
@@ -53,6 +57,15 @@ module Arrest
           @fields << attribute_name
       end
 
+      def all_fields
+        if self.superclass.respond_to?('fields') && self.superclass.fields != nil
+          self.fields + self.superclass.fields
+        else
+          self.fields
+        end
+
+      end
+
       def attributes(*args)
         args.each do |arg|
           self.send :attr_accessor,arg
@@ -78,11 +91,9 @@ module Arrest
       as_i.each_pair do |k,v|
         as[k.to_sym] = v
       end
-      unless self.class.fields == nil
-        self.class.fields.each do |field|
-          json_name = field.to_s.classify(false)
-          json_name[0] = json_name[0].downcase
-          self.instance_variable_set("@#{field.to_s}", as[json_name.to_sym]) 
+      unless self.class.all_fields == nil
+        self.class.all_fields.each do |field|
+          self.send("#{field.to_s}=", as[field.to_sym]) 
         end
       end
       self.id = as[:id]
@@ -90,8 +101,8 @@ module Arrest
 
     def to_hash
       result = {}
-      unless self.class.fields == nil
-        self.class.fields.each do |field|
+      unless self.class.all_fields == nil
+        self.class.all_fields.each do |field|
           json_name = field.to_s.classify(false)
           result[json_name] = self.instance_variable_get("@#{field.to_s}")
         end
