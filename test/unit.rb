@@ -138,16 +138,33 @@ class FirstTest < Test::Unit::TestCase
   end
 
   def test_inheritance
-    puts "is i upper:#{'i'.is_upper?} is I upper#{'I'.is_upper?}"
-    puts "isMagic".underscore
     new_zoo = SpecialZoo.new({:name => "Foo", :is_magic => true})
     new_zoo.save
 
     assert new_zoo.id != nil, "Zoo must have id after save"
-    puts "fields #{SpecialZoo.all_fields}"
     zoo_reloaded = SpecialZoo.find(new_zoo.id)
     assert_equal true, zoo_reloaded.is_magic
     assert_equal "Foo", zoo_reloaded.name
+  end
+
+  def test_inheritance_update
+    new_zoo = SpecialZoo.new({:name => "Foo", :is_magic => true})
+    new_zoo.save
+
+    assert new_zoo.id != nil, "Zoo must have id after save"
+    zoo_reloaded = SpecialZoo.find(new_zoo.id)
+    assert_equal true, zoo_reloaded.is_magic
+    assert_equal "Foo", zoo_reloaded.name
+
+    new_name = "Bar"
+    zoo_reloaded.name = new_name
+    zoo_reloaded.is_magic = !zoo_reloaded.is_magic
+    zoo_reloaded.save
+
+    updated_zoo = SpecialZoo.find(zoo_reloaded.id)
+    assert_equal new_name, updated_zoo.name
+    assert_equal !new_zoo.is_magic, updated_zoo.is_magic
+
 
   end
 end
