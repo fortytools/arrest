@@ -3,6 +3,7 @@ require 'test/unit'
 
 class Zoo < Arrest::RootResource
   attributes :name
+  read_only_attributes :ro1
   has_many :animals
 end
 
@@ -12,6 +13,7 @@ class Animal < Arrest::RestChild
 end
 
 class SpecialZoo < Zoo
+  read_only_attributes :ro2
   attributes :is_magic
 end
 
@@ -164,8 +166,20 @@ class FirstTest < Test::Unit::TestCase
     updated_zoo = SpecialZoo.find(zoo_reloaded.id)
     assert_equal new_name, updated_zoo.name
     assert_equal !new_zoo.is_magic, updated_zoo.is_magic
+  end
 
+  def test_read_only_attributes
+    zoo = SpecialZoo.new({:name => "Zoo", :ro1 => "one", :ro2 => "two", :is_magic => true})
+    
+    assert_equal "Zoo", zoo.name
+    assert_equal "one", zoo.ro1
+    assert_equal "two", zoo.ro2
+    assert_equal true, zoo.is_magic
+     
+    hash = zoo.to_hash
 
+    assert_nil hash[:ro1]
+    assert_nil hash[:ro2]
   end
 end
 

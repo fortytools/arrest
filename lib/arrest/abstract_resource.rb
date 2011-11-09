@@ -1,6 +1,9 @@
 require 'json'
 
 module Arrest
+
+  Attribute = Struct.new(:name, :read_only)
+
   class AbstractResource
     class << self
 
@@ -50,11 +53,11 @@ module Arrest
         end
       end
 
-      def add_attribute attribute_name
+      def add_attribute attribute
           if @fields == nil
             @fields = []
           end
-          @fields << attribute_name
+          @fields << attribute
       end
 
       def all_fields
@@ -66,10 +69,17 @@ module Arrest
 
       end
 
+      def read_only_attributes(*args)
+        args.each do |arg|
+          self.send :attr_accessor,arg
+          add_attribute Attribute.new(arg, true)
+        end
+      end
+
       def attributes(*args)
         args.each do |arg|
           self.send :attr_accessor,arg
-          add_attribute arg
+          add_attribute Attribute.new(arg, false)
         end
       end
 
@@ -93,7 +103,7 @@ module Arrest
       end
       unless self.class.all_fields == nil
         self.class.all_fields.each do |field|
-          self.send("#{field.to_s}=", as[field.to_sym]) 
+          self.send("#{field.name.to_s}=", as[field.name.to_sym]) 
         end
       end
       self.id = as[:id]
@@ -102,9 +112,9 @@ module Arrest
     def to_hash
       result = {}
       unless self.class.all_fields == nil
-        self.class.all_fields.each do |field|
-          json_name = field.to_s.classify(false)
-          result[json_name] = self.instance_variable_get("@#{field.to_s}")
+        self.class.all_fields.find_all{|a| !a.read_only}.each do |field|
+          json_name = field.name.to_s.classify(false)
+          result[json_name] = self.instance_variable_get("@#{field.name.to_s}")
         end
       end
       result[:id] = self.id
