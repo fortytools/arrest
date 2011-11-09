@@ -43,16 +43,13 @@ module Arrest
     end
 
     def underscore
-      res = ""
-      self.each_char do |c|
-        if res != "" && c.is_upper?
-          res << '_'
-          res << c.downcase
-        else
-          res << c
-        end
-      end
-      res
+      word = self.to_s.dup
+      word.gsub!(/::/, '/')
+      word.gsub!(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
+      word.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
+      word.tr!("-", "_")
+      word.downcase!
+      word
     end
 
     def classify(upper_first = true)
