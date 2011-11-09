@@ -15,6 +15,9 @@ module Arrest
       end
 
       def body_root response
+        if response == nil
+          return nil
+        end
         all = JSON.parse response
         all["result"]
       end
