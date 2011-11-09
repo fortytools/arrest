@@ -1,4 +1,5 @@
 require 'json'
+require 'arrest/string_utils'
 
 module Arrest
 
@@ -21,13 +22,13 @@ module Arrest
       def build hash
         underscored_hash = {}
         hash.each_pair do |k, v|
-          underscored_hash[k.underscore] = v
+          underscored_hash[StringUtils.underscore k] = v
         end
         self.new underscored_hash
       end
 
       def resource_name
-        self.name.sub(/.*:/,'').downcase.plural
+       StringUtils.plural self.name.sub(/.*:/,'').downcase
       end
 
       def has_many(*args)
@@ -42,7 +43,7 @@ module Arrest
           end
         end
         send :define_method, method_name do
-         Arrest::Source.mod.const_get(clazz_name.classify).all_for self
+         Arrest::Source.mod.const_get(StringUtils.classify clazz_name).all_for self
         end
       end
 
@@ -89,7 +90,7 @@ module Arrest
         attributes "#{name}_id".to_sym
         send :define_method, name do
           val = self.instance_variable_get("@#{name}_id")
-          Arrest::Source.mod.const_get(name.classify).find(val)
+          Arrest::Source.mod.const_get(StringUtils.classify name).find(val)
         end
       end
     end
@@ -113,7 +114,7 @@ module Arrest
       result = {}
       unless self.class.all_fields == nil
         self.class.all_fields.find_all{|a| !a.read_only}.each do |field|
-          json_name = field.name.to_s.classify(false)
+          json_name = StringUtils.classify(field.name.to_s,false)
           result[json_name] = self.instance_variable_get("@#{field.name.to_s}")
         end
       end
