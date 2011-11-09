@@ -61,10 +61,15 @@ module Arrest
         add_headers req.headers
         req.body = body
       end
-      location = response.env[:response_headers][:location]
-      id = location.gsub(/^.*\//, '')
-      rest_resource.id= id
-      response.env[:status] == 201
+      if (response.env[:status] == 201)
+        location = response.env[:response_headers][:location]
+        id = location.gsub(/^.*\//, '')
+        rest_resource.id= id
+      else
+        puts "unable to create: #{response.env[:response_headers]} body: #{response.body} "
+        false
+      end
+      
     end
 
     def connection
