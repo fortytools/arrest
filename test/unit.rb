@@ -2,19 +2,26 @@ require 'arrest'
 require 'test/unit'
 
 class Zoo < Arrest::RootResource
-  attributes :name
-  read_only_attributes :ro1
+  attributes({ :name => String })
+  read_only_attributes({ :ro1 => String})
   has_many :animals
 end
 
 class Animal < Arrest::RestChild
-  attributes :kind, :age
+  attributes({
+    :kind => String,
+    :age => Integer
+  })
   parent :zoo
 end
 
 class SpecialZoo < Zoo
-  read_only_attributes :ro2
-  attributes :is_magic
+  read_only_attributes({ :ro2 => String})
+  attributes({ 
+    :is_magic => Boolean,
+    :opened_at => Time
+  })
+
 end
 
 class FirstTest < Test::Unit::TestCase
@@ -169,7 +176,14 @@ class FirstTest < Test::Unit::TestCase
   end
 
   def test_read_only_attributes
-    zoo = SpecialZoo.new({:name => "Zoo", :ro1 => "one", :ro2 => "two", :is_magic => true})
+    now = Time.now
+    zoo = SpecialZoo.new({
+      :name => "Zoo", 
+      :ro1 => "one", 
+      :ro2 => "two", 
+      :is_magic => true,
+      :opened_at => now
+    })
     
     assert_equal "Zoo", zoo.name
     assert_equal "one", zoo.ro1
@@ -180,6 +194,9 @@ class FirstTest < Test::Unit::TestCase
 
     assert_nil hash[:ro1]
     assert_nil hash[:ro2]
+    assert_equal Time, zoo.opened_at.class
+    assert_equal now, zoo.opened_at
+
   end
 end
 

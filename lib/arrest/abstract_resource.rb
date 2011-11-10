@@ -1,9 +1,61 @@
 require 'json'
 require 'arrest/string_utils'
+require 'time'
+  class Boolean
+
+  end
 
 module Arrest
 
-  Attribute = Struct.new(:name, :read_only)
+  Attribute = Struct.new(:name, :read_only, :clazz)
+  CONVERTER = {}
+
+  class Converter
+    class << self
+      attr_reader :clazz
+
+      def convert value
+        if value.is_a?(self.clazz)
+          value
+        else
+          self.parse value
+        end
+      end
+
+      def target clazz
+        @clazz = clazz
+        CONVERTER[clazz] = self
+      end
+    end
+  end
+  
+  class IdentConv < Converter
+    def self.convert value
+      value
+    end
+  end
+
+  class StringConv < IdentConv
+    target String
+  end
+
+  class BooleanConv < IdentConv
+    target Boolean
+  end
+
+  class IntegerConv < IdentConv
+    target Integer
+  end
+
+  class TimeConv < Converter
+    target Time
+
+    def self.parse value
+      Time.parse(value)
+    end
+  end
+  
+
 
   class AbstractResource
     class << self
@@ -73,24 +125,24 @@ module Arrest
 
       end
 
-      def read_only_attributes(*args)
-        args.each do |arg|
-          self.send :attr_accessor,arg
-          add_attribute Attribute.new(arg, true)
+      def read_only_attributes(args)
+        args.each_pair do |name, clazz|
+          self.send :attr_accessor,name
+          add_attribute Attribute.new(name, true, clazz)
         end
       end
 
-      def attributes(*args)
-        args.each do |arg|
-          self.send :attr_accessor,arg
-          add_attribute Attribute.new(arg, false)
+      def attributes(args)
+        args.each_pair do |name, clazz|
+          self.send :attr_accessor,name
+          add_attribute Attribute.new(name, false, clazz)
         end
       end
 
       def belongs_to(*args)
         arg = args[0]
         name = arg.to_s.downcase
-        attributes "#{name}_id".to_sym
+        attributes({"#{name}_id".to_sym => String})
         send :define_method, name do
           val = self.instance_variable_get("@#{name}_id")
           Arrest::Source.mod.const_get(StringUtils.classify name).find(val)
@@ -107,7 +159,17 @@ module Arrest
       end
       unless self.class.all_fields == nil
         self.class.all_fields.each do |field|
-          self.send("#{field.name.to_s}=", as[field.name.to_sym]) 
+          value = as[field.name.to_sym]
+          if value
+            converter = CONVERTER[field.clazz]
+            if converter == nil
+              puts "No converter for: #{field.clazz.name}"
+              converter = IdentConv
+            end
+          else
+            converter = IdentConv
+          end
+          self.send("#{field.name.to_s}=", converter.convert(value)) 
         end
       end
       self.id = as[:id]
