@@ -199,6 +199,17 @@ module Arrest
     def delete
       AbstractResource::source().delete self
     end
+    #
+    # convenicence method printing curl command
+    def curl
+      hs = ""
+      Arrest::Source.header_decorator.headers.each_pair do |k,v| 
+        hs << "-H '#{k}:#{v}'"
+      end
+
+      "curl #{hs} -v '#{Arrest::Source.source.url}/#{self.resource_location}'"
+    end
+
 
   end
 end

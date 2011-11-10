@@ -7,6 +7,10 @@ module Arrest
       @base = base
     end
 
+    def url
+      @base
+    end
+
     def add_headers headers
       Arrest::Source.header_decorator.headers.each_pair do |k,v|
         headers[k.to_s] = v.to_s
