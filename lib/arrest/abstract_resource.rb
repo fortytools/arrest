@@ -61,6 +61,7 @@ module Arrest
     class << self
 
       attr_accessor :fields
+      
 
       def source
         Arrest::Source::source
@@ -82,8 +83,16 @@ module Arrest
         self.new underscored_hash
       end
 
+      def custom_resource_name new_name
+        @custom_resource_name = new_name
+      end
+
       def resource_name
-       StringUtils.plural self.name.sub(/.*:/,'').downcase
+       if @custom_resource_name
+         @custom_resource_name
+       else
+         StringUtils.plural self.name.sub(/.*:/,'').downcase
+       end
       end
 
       def has_many(*args)

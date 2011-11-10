@@ -16,6 +16,7 @@ class Animal < Arrest::RestChild
 end
 
 class SpecialZoo < Zoo
+  custom_resource_name :zoo3000
   read_only_attributes({ :ro2 => String})
   attributes({ 
     :is_magic => Boolean,
@@ -157,6 +158,8 @@ class FirstTest < Test::Unit::TestCase
   end
 
   def test_inheritance_update
+    assert_equal :zoo3000, SpecialZoo.resource_name
+
     new_zoo = SpecialZoo.new({:name => "Foo", :is_magic => true})
     new_zoo.save
 
