@@ -9,7 +9,7 @@ module Arrest
     class << self
       # class method to generate path to a child resource of aonther resource
       def resource_path_for parent
-        "#{parent.location}/#{self.resource_name}"
+        "#{parent.resource_location}/#{self.resource_name}"
       end
 
       def build parent, hash
@@ -38,7 +38,7 @@ module Arrest
     end
 
     # unique url for one instance of this class
-    def location
+    def resource_location
       "#{self.class.resource_path}/#{self.id.to_s}"
     end
 

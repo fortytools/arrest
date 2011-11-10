@@ -27,7 +27,7 @@ module Arrest
       "#{self.class.resource_name}"
     end
 
-    def location
+    def resource_location
       self.class.resource_path + '/' + self.id.to_s 
     end
 

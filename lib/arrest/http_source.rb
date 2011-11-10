@@ -24,7 +24,7 @@ module Arrest
     def delete rest_resource
       raise "To delete an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       response = self.connection().delete do |req|
-        req.url rest_resource.location
+        req.url rest_resource.resource_location
         add_headers req.headers
       end
       response.env[:status] == 200
@@ -37,7 +37,7 @@ module Arrest
       hash.delete("id")
 
       response = self.connection().put do |req|
-        req.url rest_resource.location
+        req.url rest_resource.resource_location
         add_headers req.headers
         req.body = hash.to_json
       end
