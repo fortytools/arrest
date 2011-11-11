@@ -17,9 +17,9 @@ module Arrest
       end
     end
 
-    def get sub
+    def get sub, filter={}
       response = self.connection().get do |req|
-        req.url sub
+        req.url sub, filter
         add_headers req.headers
       end
       response.body

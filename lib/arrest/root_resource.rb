@@ -7,8 +7,8 @@ module Arrest
         "#{self.resource_name}"
       end
 
-      def all
-        body = body_root(source().get self.resource_path)
+      def all filter={}
+        body = body_root(source().get self.resource_path, filter)
         body ||= []
         body.map do |h|
           self.build h
