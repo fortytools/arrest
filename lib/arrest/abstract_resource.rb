@@ -126,10 +126,12 @@ module Arrest
       end
 
       def all_fields
+        self_fields = self.fields
+        self_fields ||= []
         if self.superclass.respond_to?('fields') && self.superclass.fields != nil
-          self.fields + self.superclass.fields
+          self_fields + self.superclass.fields
         else
-          self.fields
+          self_fields
         end
 
       end
@@ -158,10 +160,11 @@ module Arrest
         end
       end
     end
+    self.fields = []
 
     attr_accessor :id
 
-    def initialize  as_i
+    def initialize  as_i={}
       as = {}
       as_i.each_pair do |k,v|
         as[k.to_sym] = v
