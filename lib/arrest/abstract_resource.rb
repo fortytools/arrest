@@ -144,10 +144,14 @@ module Arrest
         end
       end
 
-      def attributes(args)
-        args.each_pair do |name, clazz|
+      def attribute name, clazz
           self.send :attr_accessor,name
           add_attribute Attribute.new(name, false, clazz)
+      end
+
+      def attributes(args)
+        args.each_pair do |name, clazz|
+          self.attribute name, clazz
         end
       end
 
