@@ -20,7 +20,8 @@ module Arrest
 
     end
 
-    def get sub
+    def get sub, filters = {}
+      # filters are ignored by mem impl so far
       idx = sub.rindex(/\/[0-9]*$/)
       if idx
         ps = [sub[0..(idx-1)], sub[(idx+1)..sub.length]]
