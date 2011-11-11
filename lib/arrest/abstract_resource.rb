@@ -145,8 +145,16 @@ module Arrest
       end
 
       def attribute name, clazz
-          self.send :attr_accessor,name
           add_attribute Attribute.new(name, false, clazz)
+
+          send :define_method, "#{name}=" do |v|
+            self.unstub
+            self.instance_variable_set("@#{name}", v)
+          end
+          send :define_method, "#{name}" do
+            self.unstub
+            self.instance_variable_get("@#{name}")
+          end
       end
 
       def attributes(args)
@@ -164,12 +172,26 @@ module Arrest
           Arrest::Source.mod.const_get(StringUtils.classify name).find(val)
         end
       end
+
     end
     self.fields = []
 
     attr_accessor :id
+    attr_reader :stub
 
-    def initialize  as_i={}
+    def self.stub id
+      self.new({:id => id}, true)
+    end
+
+    def initialize  hash={},stubbed=false
+      @stub = stubbed
+      init_from_hash(hash) unless stubbed
+      self.id = hash[:id]
+      self.id ||= hash['id']
+    end
+
+    def init_from_hash as_i={}
+      @stub = false
       as = {}
       as_i.each_pair do |k,v|
         as[k.to_sym] = v
@@ -189,8 +211,8 @@ module Arrest
           self.send("#{field.name.to_s}=", converter.convert(value)) 
         end
       end
-      self.id = as[:id]
     end
+    
 
     def to_hash
       result = {}

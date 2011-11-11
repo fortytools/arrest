@@ -201,5 +201,46 @@ class FirstTest < Test::Unit::TestCase
     assert_equal now, zoo.opened_at
 
   end
+
+  def test_stub_delayed_load
+    new_zoo = Zoo.new({:name => "Foo"})
+    new_zoo.save
+    
+    assert_not_nil new_zoo.id
+
+    stubbed = Zoo.stub(new_zoo.id)
+    assert stubbed.stub, "Zoo should be a stub, so not loaded yet"
+    new_name = stubbed.name
+    assert !stubbed.stub, "Zoo should not be a stub, so loaded now"
+
+    assert_equal "Foo", new_name
+  end
+
+  def test_stub_not_load_for_child_access
+    new_zoo = Zoo.new({:name => "Foo"})
+    new_zoo.save
+    
+    assert_not_nil new_zoo.id
+
+    # this is where the magic hapens
+    stubbed = Zoo.stub(new_zoo.id)
+
+    new_animal = Animal.new new_zoo, {:kind => "foo", :age => 42}
+    new_animal.save
+    
+    assert stubbed.stub, "Zoo should be a stub, so not loaded yet"
+
+    animals = stubbed.animals
+
+    assert stubbed.stub, "Zoo should still be a stub, so not loaded yet"
+    assert_equal 1, animals.length
+
+    new_name = stubbed.name
+    assert !stubbed.stub, "Zoo should not be a stub, so loaded now"
+
+    assert_equal "Foo", new_name
+    
+
+  end
 end
 

@@ -42,6 +42,11 @@ module Arrest
       "#{self.class.resource_path}/#{self.id.to_s}"
     end
 
+    def unstub
+      return unless @stub
+      raise "stubbing for child resource isnt supported yet"
+    end
+
 
   end
 end

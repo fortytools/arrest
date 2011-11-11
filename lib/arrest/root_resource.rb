@@ -31,6 +31,17 @@ module Arrest
       self.class.resource_path + '/' + self.id.to_s 
     end
 
+    def unstub
+      return unless @stub
+      r = self.class.source().get "#{self.resource_path}/#{id}"
+      body = self.class.body_root(r)
+      underscored_hash = {}
+      body.each_pair do |k, v|
+        underscored_hash[StringUtils.underscore k] = v
+      end
+      init_from_hash underscored_hash
+    end
+
   end
 end
 
