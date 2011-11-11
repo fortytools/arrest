@@ -1,9 +1,10 @@
 require 'json'
 require 'arrest/string_utils'
 require 'time'
-  class Boolean
 
-  end
+class Boolean
+  # to have a boolean type for attributes
+end
 
 module Arrest
 
