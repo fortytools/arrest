@@ -57,11 +57,9 @@ module Arrest
 
       hash.delete_if{|k,v| v == nil}
       
-      puts "URL:#{rest_resource.class.resource_path}"
       body = hash.to_json
-      puts "Body:#{body}"
       response = self.connection().post do |req|
-        req.url rest_resource.class.resource_path
+        req.url rest_resource.resource_path
         add_headers req.headers
         req.body = body
       end
