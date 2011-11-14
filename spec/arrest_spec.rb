@@ -8,6 +8,23 @@ describe Arrest do
     it 'should work'
   end
 
+  describe '#new_record?' do
+    it 'should return true if id is nil' do
+      user.id = nil
+      user.new_record?.should be_true
+    end
+
+    it 'should return true if id is empty' do
+      user.id = ''
+      user.new_record?.should be_true
+    end
+
+    it 'should return false if id has been set' do
+      user.id = 'whatever'
+      user.new_record?.should be_false
+    end
+  end
+
   describe '#save' do
     it 'should return true on success' do
       user.save.should eql(true)

@@ -235,6 +235,10 @@ module Arrest
       end
     end
 
+    def new_record?
+      [nil, ''].include?(id)
+    end
+
     def delete
       AbstractResource::source().delete self
     end
