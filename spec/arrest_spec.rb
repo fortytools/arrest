@@ -31,6 +31,7 @@ describe Arrest do
     end
 
     it 'should return false on failure' do
+      mock(Arrest::Source.source).post(user) {false}
       user.save.should eql(false)
     end
 

@@ -228,11 +228,8 @@ module Arrest
     end
 
     def save
-      if self.respond_to?(:id) && self.id != nil
-        AbstractResource::source().put self
-      else
-        AbstractResource::source().post self
-      end
+      verb = new_record? ? :post : :put
+      !!AbstractResource::source.send(verb, self)
     end
 
     def new_record?
