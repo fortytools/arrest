@@ -18,6 +18,11 @@ module Arrest
       def find id
         r = source().get "#{self.resource_path}/#{id}"
         body = body_root(r)
+        puts "->#{body} - #{body.empty?}"
+        if body == nil || body.empty?
+          raise Errors::DocumentNotFoundError.new
+          #raise "FOOOOO"
+        end
         self.build body
       end
 

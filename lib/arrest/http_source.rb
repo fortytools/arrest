@@ -22,6 +22,9 @@ module Arrest
         req.url sub, filter
         add_headers req.headers
       end
+      if response.env[:status] != 200
+        raise Errors::DocumentNotFoundError
+      end
       response.body
     end
 
@@ -67,6 +70,7 @@ module Arrest
         location = response.env[:response_headers][:location]
         id = location.gsub(/^.*\//, '')
         rest_resource.id= id
+        true
       else
         puts "unable to create: #{response.env[:response_headers]} body: #{response.body} "
         false

@@ -67,7 +67,7 @@ module Arrest
     def put rest_resource
       raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       @@data[rest_resource.resource_path()][rest_resource.id.to_s] = rest_resource
-      rest_resource
+      true
     end
 
     def post rest_resource
@@ -88,7 +88,7 @@ module Arrest
         @@data[rest_resource.resource_path()] = {}
       end
       @@data[rest_resource.resource_path()][next_id.to_s] = rest_resource
-      next_id
+      true
     end
   end
 end

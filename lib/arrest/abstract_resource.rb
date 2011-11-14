@@ -70,7 +70,7 @@ module Arrest
 
       def body_root response
         if response == nil
-          return nil
+          raise Errors::DocumentNotFoundError
         end
         all = JSON.parse response
         all["result"]
@@ -238,6 +238,7 @@ module Arrest
 
     def delete
       AbstractResource::source().delete self
+      true
     end
     #
     # convenicence method printing curl command

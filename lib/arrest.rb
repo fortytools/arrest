@@ -1,6 +1,7 @@
 require "arrest/version"
 
 require "arrest/source"
+require "arrest/exceptions"
 require "arrest/http_source"
 require "arrest/mem_source"
 require "arrest/abstract_resource"
