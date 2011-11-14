@@ -131,6 +131,13 @@ module Arrest
           @fields << attribute
       end
 
+      def scope name
+        if @scopes == nil
+          @scopes = []
+        end
+        @scopes << name
+      end
+
       def all_fields
         self_fields = self.fields
         self_fields ||= []

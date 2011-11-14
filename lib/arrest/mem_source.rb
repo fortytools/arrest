@@ -21,6 +21,11 @@ module Arrest
     end
 
     def get sub, filters = {}
+      qs = '?'
+      filters.each_pair do |k,v|
+        qs += "#{k}=v&"
+      end
+      puts sub + '&' + qs
       # filters are ignored by mem impl so far
       idx = sub.rindex(/\/[0-9]*$/)
       if idx

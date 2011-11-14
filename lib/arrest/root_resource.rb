@@ -24,6 +24,19 @@ module Arrest
         self.build body
       end
 
+      def scope name
+        super name
+        send :define_singleton_method, name do
+          body_root(source().get self.scoped_path(name)).map do |h|
+            self.build(h)
+          end
+        end
+
+      end
+
+      def scoped_path scope_name
+        resource_path + '/' + scope_name.to_s
+      end
     end
 
     def resource_path
@@ -33,6 +46,7 @@ module Arrest
     def resource_location
       self.class.resource_path + '/' + self.id.to_s 
     end
+
 
     def unstub
       return unless @stub

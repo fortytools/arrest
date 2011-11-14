@@ -219,5 +219,19 @@ class FirstTest < Test::Unit::TestCase
     
 
   end
+
+  def test_root_scope
+    assert_not_nil Zoo.is_zoo_open
+  end
+  
+  def test_child_scope
+    new_zoo = Zoo.new({:name => "Foo"})
+    new_zoo.save
+    
+    assert_not_nil new_zoo.id
+
+    assert_not_nil new_zoo.animals.male
+
+  end
 end
 

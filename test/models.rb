@@ -1,17 +1,21 @@
 require 'arrest'
 
 class Zoo < Arrest::RootResource
-  attributes({ :name => String })
+  attributes({ :name => String , :open => Boolean})
   read_only_attributes({ :ro1 => String})
   has_many :animals
+
+  scope :is_zoo_open
 end
 
 class Animal < Arrest::RestChild
-  attributes({
-    :kind => String,
-    :age => Integer
-  })
+  attribute :kind, String
+  attribute :age, Integer
+  attribute :male, Boolean
+  
   parent :zoo
+
+  scope :male
 end
 
 class SpecialZoo < Zoo

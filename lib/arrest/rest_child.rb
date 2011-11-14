@@ -12,6 +12,10 @@ module Arrest
         "#{parent.resource_location}/#{self.resource_name}"
       end
 
+      def scoped_path_for parent, scope_name
+        (resource_path_for parent) + '/' + scope_name.to_s
+      end
+
       def build parent, hash
         self.new parent, hash
       end
@@ -30,6 +34,16 @@ module Arrest
         self.build body
       end
 
+      def scope name
+        super name
+        send :define_singleton_method, name do |parent|
+          raise "Parent has no id yet" unless parent.id
+          body_root(source().get self.scoped_path_for(parent, name)).map do |h|
+            self.build(parent, h)
+          end
+        end
+
+      end
     end
 
     # instance method to generate path to a child resource of another resource

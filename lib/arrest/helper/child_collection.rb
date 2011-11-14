@@ -6,14 +6,13 @@ module Arrest
       @children = nil
     end
 
-    def length
-      @children = resolved_class.all_for @parent
-      @children.length
-
-    end
-
     def method_missing(*args, &block)
-     children.send(*args, &block)
+     if resolved_class.respond_to?(args[0])
+       resolved_class.send(args[0], @parent)
+     else
+       children.send(*args, &block)
+
+     end
     end
 
     private
