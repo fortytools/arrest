@@ -108,15 +108,20 @@ module Arrest
           end
         end
         send :define_method, method_name do
-         Arrest::Source.mod.const_get(StringUtils.classify clazz_name).all_for self
+          if @child_collections == nil
+            @child_collections = {}
+          end
+          if @child_collections[:method_name] == nil
+            @child_collections[:method_name]  = ChildCollection.new(self, (StringUtils.classify clazz_name))
+          end
+
+          @child_collections[:method_name]
         end
       end
 
       def parent(*args)
         method_name = args[0].to_s.to_sym
-        send :define_method, method_name do
-          self.parent
-        end
+        class_eval "def #{method_name}; self.parent; end"
       end
 
       def add_attribute attribute
