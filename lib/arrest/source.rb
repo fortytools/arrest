@@ -2,6 +2,7 @@ module Arrest
 
   class Source 
     class << self
+      attr_accessor :debug
       attr_reader :source
       attr_reader :mod
       attr_reader :header_decorator
@@ -44,4 +45,5 @@ module Arrest
   end
   Source.mod = nil
   Source.header_decorator = Source
+  Source.debug = false
 end

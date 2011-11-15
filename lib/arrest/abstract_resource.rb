@@ -62,6 +62,7 @@ module Arrest
     class << self
 
       attr_accessor :fields
+      attr_reader :scopes
       
 
       def source
@@ -73,7 +74,11 @@ module Arrest
           raise Errors::DocumentNotFoundError
         end
         all = JSON.parse response
-        all["result"]
+        body = all["result"]
+        if body == nil
+          raise Errors::DocumentNotFoundError
+        end
+        body
       end
 
       def build hash

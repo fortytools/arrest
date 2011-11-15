@@ -23,13 +23,13 @@ module Arrest
 
       def all_for parent
         raise "Parent has no id yet" unless parent.id
-        body_root(source().get self.resource_path_for(parent)).map do |h|
+        body_root(source().get_many self.resource_path_for(parent)).map do |h|
           self.build(parent, h)
         end
       end
 
       def find_for parent,id
-        r = source().get "#{self.resource_path_for(parent)}/#{id}"
+        r = source().get_one "#{self.resource_path_for(parent)}/#{id}"
         body = body_root(r)
         self.build body
       end
@@ -38,7 +38,7 @@ module Arrest
         super name
         send :define_singleton_method, name do |parent|
           raise "Parent has no id yet" unless parent.id
-          body_root(source().get self.scoped_path_for(parent, name)).map do |h|
+          body_root(source().get_many self.scoped_path_for(parent, name)).map do |h|
             self.build(parent, h)
           end
         end

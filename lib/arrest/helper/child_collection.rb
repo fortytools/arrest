@@ -1,9 +1,13 @@
 module Arrest
-  class ChildCollection < BasicObject
+  class ChildCollection  #< BasicObject
     def initialize parentX, clazz_name
       @parent = parentX
       @clazz_name = clazz_name
       @children = nil
+    end
+
+    def build attributes = {}
+      resolved_class.new @parent, attributes
     end
 
     def method_missing(*args, &block)

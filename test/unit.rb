@@ -5,6 +5,7 @@ class FirstTest < Test::Unit::TestCase
 
   def setup
      Arrest::Source.source = nil
+     Arrest::Source.debug = true
   end
 
   def test_mem_src
@@ -147,12 +148,13 @@ class FirstTest < Test::Unit::TestCase
 
     new_name = "Bar"
     zoo_reloaded.name = new_name
+    old_is_magic = zoo_reloaded.is_magic
     zoo_reloaded.is_magic = !zoo_reloaded.is_magic
     zoo_reloaded.save
 
     updated_zoo = SpecialZoo.find(zoo_reloaded.id)
     assert_equal new_name, updated_zoo.name
-    assert_equal !new_zoo.is_magic, updated_zoo.is_magic
+    assert_equal !old_is_magic, updated_zoo.is_magic
   end
 
   def test_read_only_attributes
