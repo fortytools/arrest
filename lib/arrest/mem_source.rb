@@ -28,6 +28,7 @@ module Arrest
     @@all_objects = {} # holds all objects of all types,
 
     @@collections = {} # maps urls to collections of ids of objects
+    @@random = Random.new(42)
 
     end
 
@@ -149,7 +150,7 @@ module Arrest
     end
 
     def next_id
-      (0...32).map{ ('a'..'z').to_a[rand(26)] }.join
+      (0...32).map{ ('a'..'z').to_a[@@random.rand(26)] }.join
     end
   end
 end
