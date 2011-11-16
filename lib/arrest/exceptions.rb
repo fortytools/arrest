@@ -1,6 +1,6 @@
 module Arrest
   module Errors
-    class DocumentNotFoundError < Exception
+    class DocumentNotFoundError < StandardError
 
     end
   end

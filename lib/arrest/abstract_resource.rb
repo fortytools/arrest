@@ -2,6 +2,8 @@ require 'json'
 require 'arrest/string_utils'
 require 'time'
 
+Scope = Struct.new(:name, :block)
+
 class Boolean
   # to have a boolean type for attributes
 end
@@ -136,11 +138,11 @@ module Arrest
           @fields << attribute
       end
 
-      def scope name
+      def scope name, &block 
         if @scopes == nil
           @scopes = []
         end
-        @scopes << name
+        @scopes << Scope.new(name, &block)
       end
 
       def all_fields

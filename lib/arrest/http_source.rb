@@ -17,15 +17,19 @@ module Arrest
       end
     end
 
-    def get sub, filter={}
+    def get_one sub, filter={}
       response = self.connection().get do |req|
         req.url sub, filter
         add_headers req.headers
       end
       if response.env[:status] != 200
-        raise Errors::DocumentNotFoundError
+        raise Errors::DocumentNotFoundError 
       end
       response.body
+    end
+
+    def get_many sub, filter={}
+      get_one sub, filter
     end
 
     def delete rest_resource

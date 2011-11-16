@@ -24,11 +24,17 @@ module Arrest
         self.build body
       end
 
-      def scope name
-        super name
-        send :define_singleton_method, name do
-          body_root(source().get_many self.scoped_path(name)).map do |h|
-            self.build(h)
+      def scope name, &block
+        super(name)
+        if block_given?
+          send :define_singleton_method, name do
+            self.all.select &block 
+          end
+        else
+          send :define_singleton_method, name do
+            body_root(source().get_many self.scoped_path(name)).map do |h|
+              self.build(h)
+            end
           end
         end
 

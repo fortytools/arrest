@@ -124,6 +124,10 @@ describe Arrest do
 
     context 'without options' do
       context 'and without objects being persisted' do
+        before do
+          Arrest::Source.source = nil
+        end
+
         it 'should return an empty array' do
           User.all.should eq([])
         end
@@ -131,6 +135,7 @@ describe Arrest do
 
       context 'and with objects being persisted' do
         before do
+          Arrest::Source.source = nil
           user
           another_user
         end

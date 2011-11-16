@@ -25,6 +25,10 @@ module Arrest
     end
 
     def initialize
+    @@all_objects = {} # holds all objects of all types,
+
+    @@collections = {} # maps urls to collections of ids of objects
+
     end
 
     def debug s
@@ -82,6 +86,9 @@ module Arrest
        id = sub[(idx+1)..sub.length]
       end
       val = @@all_objects[id]
+      if val == nil
+        raise Errors::DocumentNotFoundError
+      end
       wrap val.to_hash.to_json, 1
     end
     

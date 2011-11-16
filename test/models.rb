@@ -5,7 +5,8 @@ class Zoo < Arrest::RootResource
   read_only_attributes({ :ro1 => String})
   has_many :animals
 
-  scope :is_zoo_open
+  scope :server_scope
+  scope(:open) { |z| z.open }
 end
 
 class Animal < Arrest::RestChild

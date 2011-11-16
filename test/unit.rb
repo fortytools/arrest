@@ -5,7 +5,7 @@ class FirstTest < Test::Unit::TestCase
 
   def setup
      Arrest::Source.source = nil
-     Arrest::Source.debug = true
+     #Arrest::Source.debug = true
   end
 
   def test_mem_src
@@ -223,7 +223,7 @@ class FirstTest < Test::Unit::TestCase
   end
 
   def test_root_scope
-    assert_not_nil Zoo.is_zoo_open
+    assert_not_nil Zoo.server_scope
   end
   
   def test_child_scope
@@ -233,7 +233,17 @@ class FirstTest < Test::Unit::TestCase
     assert_not_nil new_zoo.id
 
     assert_not_nil new_zoo.animals.male
+  end
 
+  def test_local_scope
+
+    zoo_false = Zoo.new({:name => "Foo", :open => false})
+    zoo_false.save
+    zoo_true = Zoo.new({:name => "Foo", :open => true})
+    zoo_true.save
+
+    assert_equal 1, Zoo.open.length
+    assert_equal true, Zoo.open.first.open
   end
 end
 
