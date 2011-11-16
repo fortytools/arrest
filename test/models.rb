@@ -16,7 +16,8 @@ class Animal < Arrest::RestChild
   
   parent :zoo
 
-  scope :male
+  scope :server_males_only
+  scope(:males_only){|a| a.male}
 end
 
 class SpecialZoo < Zoo

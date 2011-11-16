@@ -34,12 +34,18 @@ module Arrest
         self.build body
       end
 
-      def scope name
+      def scope name, &block
         super name
-        send :define_singleton_method, name do |parent|
-          raise "Parent has no id yet" unless parent.id
-          body_root(source().get_many self.scoped_path_for(parent, name)).map do |h|
-            self.build(parent, h)
+        if block_given?
+          send :define_singleton_method, name do |parent|
+            self.all_for(parent).select &block 
+          end
+        else
+          send :define_singleton_method, name do |parent|
+            raise "Parent has no id yet" unless parent.id
+            body_root(source().get_many self.scoped_path_for(parent, name)).map do |h|
+              self.build(parent, h)
+            end
           end
         end
 

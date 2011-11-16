@@ -232,7 +232,7 @@ class FirstTest < Test::Unit::TestCase
     
     assert_not_nil new_zoo.id
 
-    assert_not_nil new_zoo.animals.male
+    assert_not_nil new_zoo.animals.server_males_only
   end
 
   def test_local_scope
@@ -244,6 +244,20 @@ class FirstTest < Test::Unit::TestCase
 
     assert_equal 1, Zoo.open.length
     assert_equal true, Zoo.open.first.open
+  end
+
+  def test_local_child_scope
+    new_zoo = Zoo.new({:name => "Foo"})
+    new_zoo.save
+
+    animal_kind = "mouse"
+    Animal.new(new_zoo, {:kind => animal_kind, :age => 42, :male => true}).save
+    Animal.new(new_zoo, {:kind => animal_kind, :age => 42, :male => false}).save
+
+    assert_equal 2, Zoo.all.first.animals.length
+    assert_equal 1, Zoo.all.first.animals.males_only.length
+    assert_equal true, Zoo.all.first.animals.males_only.first.male
+
   end
 end
 
