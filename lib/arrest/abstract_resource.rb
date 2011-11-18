@@ -118,11 +118,11 @@ module Arrest
           if @child_collections == nil
             @child_collections = {}
           end
-          if @child_collections[:method_name] == nil
-            @child_collections[:method_name]  = ChildCollection.new(self, (StringUtils.classify clazz_name))
+          if @child_collections[method_name] == nil
+            @child_collections[method_name]  = ChildCollection.new(self, (StringUtils.classify clazz_name))
           end
 
-          @child_collections[:method_name]
+          @child_collections[method_name]
         end
       end
 

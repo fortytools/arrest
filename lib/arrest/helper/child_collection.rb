@@ -1,18 +1,18 @@
 module Arrest
-  class ChildCollection  #< BasicObject
+  class ChildCollection  < BasicObject
     def initialize parentX, clazz_name
-      @parent = parentX
+      @parent_clazz = parentX
       @clazz_name = clazz_name
       @children = nil
     end
 
     def build attributes = {}
-      resolved_class.new @parent, attributes
+      resolved_class.new @parent_clazz, attributes
     end
 
     def method_missing(*args, &block)
      if resolved_class.respond_to?(args[0])
-       resolved_class.send(args[0], @parent)
+       resolved_class.send(args[0], @parent_clazz)
      else
        children.send(*args, &block)
 
@@ -24,7 +24,7 @@ module Arrest
 
     def children
       if @children == nil
-        @children = resolved_class.all_for @parent
+        @children = resolved_class.all_for @parent_clazz
       end
       @children
     end
