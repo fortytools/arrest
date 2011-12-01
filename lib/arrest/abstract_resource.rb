@@ -4,66 +4,11 @@ require 'time'
 
 Scope = Struct.new(:name, :block)
 
-class Boolean
-  # to have a boolean type for attributes
-end
-
 module Arrest
-
-  Attribute = Struct.new(:name, :read_only, :clazz)
-  CONVERTER = {}
-
-  class Converter
-    class << self
-      attr_reader :clazz
-
-      def convert value
-        if value.is_a?(self.clazz)
-          value
-        else
-          self.parse value
-        end
-      end
-
-      def target clazz
-        @clazz = clazz
-        CONVERTER[clazz] = self
-      end
-    end
-  end
-  
-  class IdentConv < Converter
-    def self.convert value
-      value
-    end
-  end
-
-  class StringConv < IdentConv
-    target String
-  end
-
-  class BooleanConv < IdentConv
-    target Boolean
-  end
-
-  class IntegerConv < IdentConv
-    target Integer
-  end
-
-  class TimeConv < Converter
-    target Time
-
-    def self.parse value
-      Time.parse(value)
-    end
-  end
-  
-
-
   class AbstractResource
+    include HasAttributes
     class << self
 
-      attr_accessor :fields
       attr_reader :scopes
       
 
@@ -131,12 +76,6 @@ module Arrest
         class_eval "def #{method_name}; self.parent; end"
       end
 
-      def add_attribute attribute
-          if @fields == nil
-            @fields = []
-          end
-          @fields << attribute
-      end
 
       def scope name, &block 
         if @scopes == nil
@@ -145,40 +84,11 @@ module Arrest
         @scopes << Scope.new(name, &block)
       end
 
-      def all_fields
-        self_fields = self.fields
-        self_fields ||= []
-        if self.superclass.respond_to?('fields') && self.superclass.fields != nil
-          self_fields + self.superclass.fields
-        else
-          self_fields
-        end
-
-      end
 
       def read_only_attributes(args)
         args.each_pair do |name, clazz|
           self.send :attr_accessor,name
           add_attribute Attribute.new(name, true, clazz)
-        end
-      end
-
-      def attribute name, clazz
-          add_attribute Attribute.new(name, false, clazz)
-
-          send :define_method, "#{name}=" do |v|
-            self.unstub
-            self.instance_variable_set("@#{name}", v)
-          end
-          send :define_method, "#{name}" do
-            self.unstub
-            self.instance_variable_get("@#{name}")
-          end
-      end
-
-      def attributes(args)
-        args.each_pair do |name, clazz|
-          self.attribute name, clazz
         end
       end
 
@@ -193,7 +103,6 @@ module Arrest
       end
 
     end
-    self.fields = []
 
     attr_accessor :id
     attr_reader :stub

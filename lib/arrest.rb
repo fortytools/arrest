@@ -1,5 +1,7 @@
 require "arrest/version"
 
+require "arrest/attributes/has_attributes"
+require "arrest/attributes/converter"
 require "arrest/source"
 require "arrest/helper/child_collection"
 require "arrest/exceptions"
