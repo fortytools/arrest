@@ -120,25 +120,7 @@ module Arrest
 
     def init_from_hash as_i={}
       @stub = false
-      as = {}
-      as_i.each_pair do |k,v|
-        as[k.to_sym] = v
-      end
-      unless self.class.all_fields == nil
-        self.class.all_fields.each do |field|
-          value = as[field.name.to_sym]
-          if value
-            converter = CONVERTER[field.clazz]
-            if converter == nil
-              puts "No converter for: #{field.clazz.name}"
-              converter = IdentConv
-            end
-          else
-            converter = IdentConv
-          end
-          self.send("#{field.name.to_s}=", converter.convert(value)) 
-        end
-      end
+      super 
     end
     
 

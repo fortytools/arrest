@@ -4,8 +4,48 @@ end
 
 module Arrest
 
-  Attribute = Struct.new(:name, :read_only, :clazz)
+  class Attribute
+    attr_accessor :name, :read_only, :clazz
+    def initialize name, read_only, clazz
+      @name = name
+      @read_only = read_only
+      @clazz = clazz
+    end
+
+    def convert value
+      return if value == nil
+      converter = CONVERTER[@clazz]
+      if converter == nil
+        puts "No converter for: #{@clazz.name}"
+        converter = IdentConv
+      end
+      converter.convert value
+    end
+  end
+
+  class NestedAttribute < Attribute
+    def initialize
+      super name, read_only, clazz
+    end
+
+    def convert value
+      return unless value
+      resolved_class.new value
+    end
+
+    def resolved_class
+      if @clazz == nil
+        @clazz = Source.mod.const_get(@clazz_name)
+      end
+      @clazz
+    end
+  end
+
   CONVERTER = {}
+
+  def add_converter key, converter
+    CONVERTER[key] = converter
+  end
 
   class Converter
     class << self

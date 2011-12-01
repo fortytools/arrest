@@ -5,8 +5,27 @@ module Arrest
       base.extend HasAttributesMethods
     end
 
+    def unstub
+
+    end
+
+    def init_from_hash as_i={}
+      as = {}
+      as_i.each_pair do |k,v|
+        as[k.to_sym] = v
+      end
+      unless self.class.all_fields == nil
+        self.class.all_fields.each do |field|
+          value = as[field.name.to_sym]
+          converted = field.convert(value)
+          self.send("#{field.name.to_s}=", converted) 
+        end
+      end
+    end
+
     module HasAttributesMethods
       attr_accessor :fields
+
       
       def attribute name, clazz
           add_attribute Attribute.new(name, false, clazz)
@@ -43,6 +62,11 @@ module Arrest
           self_fields
         end
       end
+
+      def nested name, clazz
+        
+      end
+
     end
   end
 end

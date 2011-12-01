@@ -30,3 +30,12 @@ class SpecialZoo < Zoo
 
 end
 
+class ANestedClass < Arrest::NestedResource
+  attribute :name, String
+end
+
+class WithNested < Arrest::RootResource
+  attribute :parent_name, String
+  #nested :ANestedClass
+end
+
