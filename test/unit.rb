@@ -198,19 +198,24 @@ class FirstTest < Test::Unit::TestCase
   def test_stub_not_load_for_child_access
     new_zoo = Zoo.new({:name => "Foo"})
     new_zoo.save
+    puts "  ----  1------"
     
     assert_not_nil new_zoo.id
-
+    puts "  ----  2------"
     # this is where the magic hapens
     stubbed = Zoo.stub(new_zoo.id)
+    puts "  ----  3------"
+    return
 
     new_animal = Animal.new new_zoo, {:kind => "foo", :age => 42}
     new_animal.save
     
+    puts "  ----  3------"
     assert stubbed.stub, "Zoo should be a stub, so not loaded yet"
 
     animals = stubbed.animals
 
+    puts "  ----  4------"
     assert stubbed.stub, "Zoo should still be a stub, so not loaded yet"
     assert_equal 1, animals.length
 

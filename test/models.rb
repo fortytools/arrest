@@ -32,10 +32,12 @@ end
 
 class ANestedClass < Arrest::NestedResource
   attribute :name, String
+  attribute :bool, Boolean
 end
 
 class WithNested < Arrest::RootResource
   attribute :parent_name, String
-  #nested :ANestedClass
+  attribute :bool, Boolean
+  nested :nested_object, ANestedClass
 end
 
