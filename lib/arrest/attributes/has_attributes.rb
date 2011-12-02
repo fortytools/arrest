@@ -23,6 +23,21 @@ module Arrest
       end
     end
 
+    def to_hash
+      result = {}
+      unless self.class.all_fields == nil
+        self.class.all_fields.find_all{|a| !a.read_only}.each do |field|
+          json_name = StringUtils.classify(field.name.to_s,false)
+           val = self.instance_variable_get("@#{field.name.to_s}")
+           if val != nil && val.is_a?(NestedResource)
+             val = val.to_hash
+           end
+           result[json_name] = val
+        end
+      end
+      result
+    end
+
     module HasAttributesMethods
       attr_accessor :fields
 
@@ -64,6 +79,16 @@ module Arrest
       end
 
       def nested name, clazz
+          add_attribute NestedAttribute.new(name, false, clazz)
+
+          send :define_method, "#{name}=" do |v|
+            self.unstub
+            self.instance_variable_set("@#{name}", v)
+          end
+          send :define_method, "#{name}" do
+            self.unstub
+            self.instance_variable_get("@#{name}")
+          end
         
       end
 

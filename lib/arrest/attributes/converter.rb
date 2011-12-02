@@ -24,7 +24,7 @@ module Arrest
   end
 
   class NestedAttribute < Attribute
-    def initialize
+    def initialize name, read_only, clazz
       super name, read_only, clazz
     end
 

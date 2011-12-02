@@ -26,6 +26,7 @@ class NestedResourcesTest < Test::Unit::TestCase
     actual = WithNested.new(input)
     assert_equal 'parent', actual.parent_name
     assert_equal false, actual.bool
+    puts actual.inspect
     assert actual.respond_to? :nested_object, "The parent object should have an accessor for the nested object"
     assert_equal 'iamnested', actual.nested_object.name
     assert_equal true, actual.nested_object.bool
