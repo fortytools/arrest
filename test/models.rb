@@ -41,3 +41,22 @@ class WithNested < Arrest::RootResource
   nested :nested_object, ANestedClass
 end
 
+class WithManyNested < Arrest::RootResource
+  attribute :parent_name, String
+  attribute :bool, Boolean
+  nested_array :nested_objects, ANestedClass
+end
+
+
+class ANestedClassBelonging < Arrest::NestedResource
+  attribute :name, String
+  attribute :bool, Boolean
+
+  belongs_to :zoo
+end
+
+class WithNestedBelongingTo < Arrest::RootResource
+  attribute :parent_name, String
+  attribute :bool, Boolean
+  nested :nested_object, ANestedClassBelonging
+end

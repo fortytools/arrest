@@ -1,5 +1,6 @@
 require "arrest/version"
 
+require "arrest/attributes/belongs_to"
 require "arrest/attributes/has_attributes"
 require "arrest/attributes/converter"
 require "arrest/source"

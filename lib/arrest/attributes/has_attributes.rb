@@ -92,6 +92,22 @@ module Arrest
         
       end
 
+      def nested_array name, clazz
+          add_attribute NestedCollection.new(name, false, clazz)
+
+          send :define_method, "#{name}=" do |v|
+            self.unstub
+            self.instance_variable_set("@#{name}", v)
+          end
+          send :define_method, "#{name}" do
+            self.unstub
+            self.instance_variable_get("@#{name}")
+          end
+        
+      end
+
     end
+
+
   end
 end

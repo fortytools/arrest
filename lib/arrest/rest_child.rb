@@ -28,6 +28,10 @@ module Arrest
         end
       end
 
+      def find id
+        raise "find cannot be executed for child resources - use find_for with a parent"
+      end
+
       def find_for parent,id
         r = source().get_one "#{self.resource_path_for(parent)}/#{id}"
         body = body_root(r)

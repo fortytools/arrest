@@ -30,15 +30,23 @@ module Arrest
 
     def convert value
       return unless value
-      resolved_class.new value
+      @clazz.new value
+    end
+  end
+
+  class NestedCollection < Attribute
+    def initialize name, read_only, clazz
+      super name, read_only, clazz
     end
 
-    def resolved_class
-      if @clazz == nil
-        @clazz = Source.mod.const_get(@clazz_name)
+    def convert value
+      return unless value
+      raise "Expected an array but got #{value.class.name}" unless value.is_a?(Array)
+      value.map do |v|
+        @clazz.new v
       end
-      @clazz
     end
+
   end
 
   CONVERTER = {}

@@ -64,7 +64,7 @@ module Arrest
             @child_collections = {}
           end
           if @child_collections[method_name] == nil
-            @child_collections[method_name]  = ChildCollection.new(self, (StringUtils.classify clazz_name))
+            @child_collections[method_name]  = ChildCollection.new(self, (StringUtils.classify (StringUtils.singular clazz_name)))
           end
 
           @child_collections[method_name]
@@ -92,17 +92,9 @@ module Arrest
         end
       end
 
-      def belongs_to(*args)
-        arg = args[0]
-        name = arg.to_s.downcase
-        attributes({"#{name}_id".to_sym => String})
-        send :define_method, name do
-          val = self.instance_variable_get("@#{name}_id")
-          Arrest::Source.mod.const_get(StringUtils.classify name).find(val)
-        end
-      end
-
     end
+
+    include BelongsTo
 
     attr_accessor :id
     attr_reader :stub
@@ -132,6 +124,8 @@ module Arrest
            val = self.instance_variable_get("@#{field.name.to_s}")
            if val != nil && val.is_a?(NestedResource)
              val = val.to_hash
+           elsif val != nil && field.is_a?(NestedCollection)
+             val = val.map {|v| v.to_hash}
            end
            result[json_name] = val
         end

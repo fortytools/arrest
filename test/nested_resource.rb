@@ -58,6 +58,77 @@ class NestedResourcesTest < Test::Unit::TestCase
 
   end
 
+  def test_many_to_hash
+    input = {
+      :parent_name => 'parent',
+      :bool => false,
+      :nested_objects => [
+        { 
+        :name => 'iamnested_one',
+        :bool => true
+        },{ 
+        :name => 'iamnested_two',
+        :bool => false
+        } 
+      ]
+    }
+
+    actual = WithManyNested.new(input)
+
+    # we expect camel cased keys
+    expected = {
+      'parentName' => 'parent',
+      'bool' => false,
+      'nestedObjects' => [
+        { 
+        'name' => 'iamnested_one',
+        'bool' => true
+        },{ 
+        'name' => 'iamnested_two',
+        'bool' => false
+        }
+      ]
+    }
+
+    assert_equal_hashes expected, actual.to_hash
+
+  end
+
+  def test_belongd_to_to_hash
+    new_zoo = Zoo.new({:name => "Foo"})
+    new_zoo.save
+
+    input = {
+      :parent_name => 'parent',
+      :bool => false,
+      :nested_object => { 
+        :name => 'iamnested',
+        :bool => true,
+        :zoo_id => new_zoo.id
+      }
+    }
+
+    actual = WithNestedBelongingTo.new(input)
+
+    # we expect camel cased keys
+    expected = {
+      'parentName' => 'parent',
+      'bool' => false,
+      'nestedObject' => { 
+        'name' => 'iamnested',
+        'bool' => true,
+        'zooId' => new_zoo.id
+
+      }
+    }
+
+    assert_equal_hashes expected, actual.to_hash
+
+    zoo = actual.nested_object.zoo
+    assert_equal "Foo", zoo.name
+
+  end
+
   def assert_equal_hashes expected, actual
     assert_equal_hashes_ expected, actual, ''
   end

@@ -4,6 +4,7 @@ module Arrest
   # an other NestedResource
   class NestedResource
     include HasAttributes
+    include BelongsTo
 
     def initialize h
       init_from_hash h

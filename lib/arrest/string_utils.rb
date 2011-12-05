@@ -45,7 +45,8 @@ class StringUtils
     def classify(str, upper_first = true)
       result = ""
       upperNext = false
-      (singular str) .each_char do |c|
+      #(singular str) .each_char do |c|
+      (str) .each_char do |c|
         if c == "_"
           upperNext = true
         else
