@@ -15,13 +15,12 @@ module Arrest
         field_name = "#{name}_id"
         if params
           field_name = params[:field_name] unless params[:field_name] == nil
-          class_name = params[:class.name] unless params[:class_name] == nil
+          class_name = params[:class_name].to_s unless params[:class_name] == nil
         end
         attributes({field_name.to_sym => String})
         send :define_method, name do
           val = self.send(field_name)
           begin
-            puts "Arrest::Source.mod.const_get(#{class_name}).find(#{val})"
             Arrest::Source.mod.const_get(class_name).find(val)
           rescue Errors::DocumentNotFoundError => e
             raise Errors::DocumentNotFoundError, "Couldnt find a #{class_name} with id #{val}"

@@ -60,3 +60,9 @@ class WithNestedBelongingTo < Arrest::RootResource
   attribute :bool, Boolean
   nested :nested_object, ANestedClassBelonging
 end
+
+class CustomNamedBelongsTo < Arrest::RootResource
+  attribute :name, String
+  belongs_to :zoo_thing, { :field_name => :schinken, :class_name => :Zoo}
+  belongs_to :zoo, { :field_name => :batzen}
+end

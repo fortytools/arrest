@@ -26,7 +26,6 @@ class NestedResourcesTest < Test::Unit::TestCase
     actual = WithNested.new(input)
     assert_equal 'parent', actual.parent_name
     assert_equal false, actual.bool
-    puts actual.inspect
     assert actual.respond_to? :nested_object, "The parent object should have an accessor for the nested object"
     assert_equal 'iamnested', actual.nested_object.name
     assert_equal true, actual.nested_object.bool
@@ -126,6 +125,26 @@ class NestedResourcesTest < Test::Unit::TestCase
 
     zoo = actual.nested_object.zoo
     assert_equal "Foo", zoo.name
+
+  end
+
+  def test_custom_belongs_to
+
+    new_zoo = Zoo.new({:name => "Foo"})
+    new_zoo.save
+
+    c = CustomNamedBelongsTo.new({:name => 'Bar', :schinken => new_zoo.id, :batzen => new_zoo.id})
+
+    c.save
+    assert_not_nil c.id, "Persisted object should have id"
+    assert_equal  "Foo", c.zoo_thing.name
+    assert_equal  "Foo", c.zoo.name
+    
+
+    assert_not_nil c.id, "Persisted zoo should have id"
+    c_reloaded = CustomNamedBelongsTo.all.first
+    assert_equal  "Foo", c_reloaded.zoo_thing.name
+    assert_equal  "Foo", c_reloaded.zoo.name
 
   end
 
