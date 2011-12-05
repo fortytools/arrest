@@ -10,10 +10,22 @@ module Arrest
       def belongs_to(*args)
         arg = args[0]
         name = arg.to_s.downcase
-        attributes({"#{name}_id".to_sym => String})
+        class_name = StringUtils.classify name
+        params = args[1] unless args.length < 2
+        field_name = "#{name}_id"
+        if params
+          field_name = params[:field_name] unless params[:field_name] == nil
+          class_name = params[:class.name] unless params[:class_name] == nil
+        end
+        attributes({field_name.to_sym => String})
         send :define_method, name do
-          val = self.instance_variable_get("@#{name}_id")
-          Arrest::Source.mod.const_get(StringUtils.classify name).find(val)
+          val = self.send(field_name)
+          begin
+            puts "Arrest::Source.mod.const_get(#{class_name}).find(#{val})"
+            Arrest::Source.mod.const_get(class_name).find(val)
+          rescue Errors::DocumentNotFoundError => e
+            raise Errors::DocumentNotFoundError, "Couldnt find a #{class_name} with id #{val}"
+          end
         end
       end
     end
