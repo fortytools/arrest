@@ -32,6 +32,7 @@ end
 
 class ANestedClass < Arrest::NestedResource
   attribute :name, String
+  attribute :underscore_name, String
   attribute :bool, Boolean
 end
 

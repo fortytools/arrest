@@ -7,10 +7,9 @@ Scope = Struct.new(:name, :block)
 module Arrest
   class AbstractResource
     include HasAttributes
+    attribute :id, String
     class << self
-
       attr_reader :scopes
-      
 
       def source
         Arrest::Source::source
@@ -97,42 +96,9 @@ module Arrest
     include BelongsTo
 
     attr_accessor :id
-    attr_reader :stub
 
-    def self.stub id
-      self.new({:id => id}, true)
-    end
-
-    def initialize  hash={},stubbed=false
-      @stub = stubbed
-      init_from_hash(hash) unless stubbed
-      self.id = hash[:id]
-      self.id ||= hash['id']
-    end
-
-    def init_from_hash as_i={}
-      @stub = false
-      super 
-    end
-    
-
-    def to_hash
-      result = {}
-      unless self.class.all_fields == nil
-        self.class.all_fields.find_all{|a| !a.read_only}.each do |field|
-          json_name = StringUtils.classify(field.name.to_s,false)
-           val = self.instance_variable_get("@#{field.name.to_s}")
-           if val != nil && val.is_a?(NestedResource)
-             val = val.to_hash
-           elsif val != nil && field.is_a?(NestedCollection)
-             val = val.map {|v| v.to_hash}
-           end
-           result[json_name] = val
-        end
-      end
-      result[:id] = self.id
-      result
-
+    def initialize  hash={}
+      initialize_has_attributes hash
     end
 
     def save
@@ -158,7 +124,5 @@ module Arrest
 
       "curl #{hs} -v '#{Arrest::Source.source.url}/#{self.resource_location}'"
     end
-
-
   end
 end

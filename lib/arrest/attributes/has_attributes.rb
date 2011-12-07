@@ -1,58 +1,86 @@
+require "arrest/source"
 module Arrest
   module HasAttributes
+    attr_accessor :attribute_values
+
+    def initialize_has_attributes hash, &blk
+      if block_given?
+        @stubbed = true
+        @load_blk = blk
+      else
+        @stubbed = false
+      end
+      init_from_hash hash
+    end
+
+    def initialize hash = {}, &blk
+      if block_given?
+        @stubbed = true
+        @load_blk = blk
+      else
+        init_from_hash hash
+      end
+    end
 
     def self.included(base) # :nodoc:
       base.extend HasAttributesMethods
     end
 
-    def unstub
-
-    end
-
-    def init_from_hash as_i={}
+    def init_from_hash as_i={}, from_json = false
+      @attribute_values = {} unless @attribute_values != nil
       as = {}
       as_i.each_pair do |k,v|
         as[k.to_sym] = v
       end
-      unless self.class.all_fields == nil
-        self.class.all_fields.each do |field|
-          value = as[field.name.to_sym]
-          converted = field.convert(value)
-          self.send("#{field.name.to_s}=", converted) 
+      self.class.all_fields.each do |field|
+        if from_json
+          key = field.json_name
+        else
+          key = field.name
         end
+        value = as[key] 
+        converted = field.convert(value)
+        self.send(field.name.to_s + '=', converted) unless converted == nil
       end
     end
 
-    def to_hash
+    def load_from_stub
+      @load_blk.call
+      @stubbed = false
+    end
+
+
+    def to_jhash
+      to_hash(false, true)
+    end
+
+    def to_hash(show_all_fields = true, json_names = false)
       result = {}
-      unless self.class.all_fields == nil
-        self.class.all_fields.find_all{|a| !a.read_only}.each do |field|
-          json_name = StringUtils.classify(field.name.to_s,false)
-           val = self.instance_variable_get("@#{field.name.to_s}")
-           if val != nil && val.is_a?(NestedResource)
-             val = val.to_hash
-           end
-           result[json_name] = val
+      self.class.all_fields.find_all{|a| show_all_fields || !a.read_only}.each do |field|
+        if json_names
+          json_name = field.json_name
+        else
+          json_name = field.name
         end
+        val = self.send(field.name)
+        if val != nil && val.is_a?(NestedResource)
+          val = val.to_hash
+        end
+        result[json_name] = val
       end
       result
     end
 
     module HasAttributesMethods
+
       attr_accessor :fields
 
-      
-      def attribute name, clazz
-          add_attribute Attribute.new(name, false, clazz)
+      def initialize
+        @fields = []
+      end
 
-          send :define_method, "#{name}=" do |v|
-            self.unstub
-            self.instance_variable_set("@#{name}", v)
-          end
-          send :define_method, "#{name}" do
-            self.unstub
-            self.instance_variable_get("@#{name}")
-          end
+      def attribute name, clazz
+        add_attribute Attribute.new(name, false, clazz)
       end
 
       def attributes(args)
@@ -62,52 +90,43 @@ module Arrest
       end
 
       def add_attribute attribute
-          if @fields == nil
-            @fields = []
-          end
-          @fields << attribute
+        if @fields == nil
+          @fields = []
+        end
+        send :define_method, "#{attribute.name}=" do |v|
+          Arrest::debug "setter #{self.class.name} #{attribute.name} = #{v}"
+          self.attribute_values[attribute.name] = v
+        end
+        send :define_method, "#{attribute.name}" do
+          Arrest::debug "getter #{self.class.name} #{attribute.name}" 
+          self.load_from_stub if @stubbed
+          self.attribute_values[attribute.name]
+        end
+        @fields << attribute
       end
 
       def all_fields
         self_fields = self.fields
         self_fields ||= []
-        if self.superclass.respond_to?('fields') && self.superclass.fields != nil
-          self_fields + self.superclass.fields
+        if self.superclass.respond_to?('fields') && self.superclass.all_fields != nil
+          res = self_fields + self.superclass.all_fields
         else
-          self_fields
+          res = self_fields
         end
+        res
       end
 
       def nested name, clazz
-          add_attribute NestedAttribute.new(name, false, clazz)
-
-          send :define_method, "#{name}=" do |v|
-            self.unstub
-            self.instance_variable_set("@#{name}", v)
-          end
-          send :define_method, "#{name}" do
-            self.unstub
-            self.instance_variable_get("@#{name}")
-          end
-        
+        add_attribute NestedAttribute.new(name, false, clazz)
       end
 
       def nested_array name, clazz
-          add_attribute NestedCollection.new(name, false, clazz)
-
-          send :define_method, "#{name}=" do |v|
-            self.unstub
-            self.instance_variable_set("@#{name}", v)
-          end
-          send :define_method, "#{name}" do
-            self.unstub
-            self.instance_variable_get("@#{name}")
-          end
-        
+        add_attribute NestedCollection.new(name, false, clazz)
       end
-
     end
 
-
+    def stubbed?
+      @stubbed
+    end
   end
 end

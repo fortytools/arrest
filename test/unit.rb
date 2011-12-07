@@ -5,7 +5,7 @@ class FirstTest < Test::Unit::TestCase
 
   def setup
      Arrest::Source.source = nil
-     #Arrest::Source.debug = true
+     Arrest::Source.debug = true
   end
 
   def test_mem_src
@@ -15,9 +15,14 @@ class FirstTest < Test::Unit::TestCase
   end
 
   def test_init
+    puts "test_init NOWWWWWW #{Arrest::Source::source.objects.length}"
     zooname =  "Hagenbecks"
     z = Zoo.new({:name => zooname})
+    puts "aaa #{z.attribute_values.inspect}"
     assert_equal zooname, z.name
+    #assert_not_empty Arrest::AbstractResource.all_fields.select {|f| f.name == :id}, "AbstractResource defines the id field itself"
+    #assert_not_empty Arrest::RootResource.all_fields.select {|f| f.name == :id}, "RootResource should inherit id from AbstractResource"
+    #assert_not_empty Zoo.all_fields.select {|f| f.name == :id}, "Zoo should inherit id field from RootResource"
   end
   
   def test_create
@@ -25,15 +30,18 @@ class FirstTest < Test::Unit::TestCase
     new_zoo = Zoo.new({:name => "Foo"})
     new_zoo.save
     zoo_count_after = Zoo.all.length
+    assert_not_nil new_zoo.id
 
     assert_equal (zoo_count_before + 1), zoo_count_after
     assert new_zoo.id != nil
 
     zoo_the_last = Zoo.all.last
     assert_equal new_zoo.name, zoo_the_last.name
+    assert_equal new_zoo.id, zoo_the_last.id
 
     zoo_reloaded = Zoo.find(new_zoo.id)
     assert_equal new_zoo.name, zoo_reloaded.name
+    assert_equal new_zoo.id, zoo_reloaded.id
   end
 
   def test_delete
@@ -75,6 +83,8 @@ class FirstTest < Test::Unit::TestCase
     assert new_zoo.id != nil
 
     zoo_reloaded = Zoo.find(new_zoo.id)
+    assert_not_nil zoo_reloaded
+    assert_equal new_zoo.id, zoo_reloaded.id
 
     assert_equal new_zoo_name, zoo_reloaded.name
   end
@@ -82,6 +92,8 @@ class FirstTest < Test::Unit::TestCase
   def test_child
     new_zoo = Zoo.new({:name => "Foo"})
     new_zoo.save
+    assert_not_nil new_zoo.id
+    #assert_not_nil new_zoo.class.all_fields.select {|f| f.name = :id}
 
     animal_kind = "mouse"
     new_animal = Animal.new new_zoo, {:kind => animal_kind, :age => 42}
@@ -94,7 +106,9 @@ class FirstTest < Test::Unit::TestCase
     assert new_animal.id != nil
 
     zoo_reloaded = Zoo.find(new_zoo.id)
-
+    puts "--1 #{zoo_reloaded.to_hash}"
+    assert_equal new_zoo.id, zoo_reloaded.id
+    assert_equal new_animal.parent.id, zoo_reloaded.id
 
     assert_equal 1, zoo_reloaded.animals.length
     assert_equal Animal, zoo_reloaded.animals.first.class
@@ -126,11 +140,15 @@ class FirstTest < Test::Unit::TestCase
   end
 
   def test_inheritance
+    puts "NOWWWWWW #{Arrest::Source::source.objects.length}"
     new_zoo = SpecialZoo.new({:name => "Foo", :is_magic => true})
+    assert_equal "Foo", new_zoo.name
+    assert_equal true, new_zoo.is_magic
     new_zoo.save
 
     assert new_zoo.id != nil, "Zoo must have id after save"
     zoo_reloaded = SpecialZoo.find(new_zoo.id)
+    assert_equal new_zoo.id, zoo_reloaded.id
     assert_equal true, zoo_reloaded.is_magic
     assert_equal "Foo", zoo_reloaded.name
   end
@@ -172,7 +190,7 @@ class FirstTest < Test::Unit::TestCase
     assert_equal "two", zoo.ro2
     assert_equal true, zoo.is_magic
      
-    hash = zoo.to_hash
+    hash = zoo.to_jhash
 
     assert_nil hash[:ro1]
     assert_nil hash[:ro2]
@@ -188,9 +206,9 @@ class FirstTest < Test::Unit::TestCase
     assert_not_nil new_zoo.id
 
     stubbed = Zoo.stub(new_zoo.id)
-    assert stubbed.stub, "Zoo should be a stub, so not loaded yet"
+    assert stubbed.stubbed?, "Zoo should be a stub, so not loaded yet"
     new_name = stubbed.name
-    assert !stubbed.stub, "Zoo should not be a stub, so loaded now"
+    assert !stubbed.stubbed?, "Zoo should not be a stub, so loaded now"
 
     assert_equal "Foo", new_name
   end
@@ -202,24 +220,21 @@ class FirstTest < Test::Unit::TestCase
     assert_not_nil new_zoo.id
     # this is where the magic hapens
     stubbed = Zoo.stub(new_zoo.id)
-    return
 
     new_animal = Animal.new new_zoo, {:kind => "foo", :age => 42}
     new_animal.save
     
-    assert stubbed.stub, "Zoo should be a stub, so not loaded yet"
+    assert stubbed.stubbed?, "Zoo should be a stub, so not loaded yet"
 
     animals = stubbed.animals
 
-    assert stubbed.stub, "Zoo should still be a stub, so not loaded yet"
+    assert stubbed.stubbed?, "Zoo should still be a stub, so not loaded yet"
     assert_equal 1, animals.length
 
     new_name = stubbed.name
-    assert !stubbed.stub, "Zoo should not be a stub, so loaded now"
+    assert !stubbed.stubbed?, "Zoo should not be a stub, so loaded now"
 
     assert_equal "Foo", new_name
-    
-
   end
 
   def test_root_scope

@@ -21,7 +21,7 @@ module Arrest
         if body == nil || body.empty?
           raise Errors::DocumentNotFoundError.new
         end
-        self.build body
+        self.build body.merge({:id => id})
       end
 
       def scope name, &block
@@ -43,6 +43,16 @@ module Arrest
       def scoped_path scope_name
         resource_path + '/' + scope_name.to_s
       end
+
+      def stub stub_id
+        n = self.new
+        n.initialize_has_attributes({:id => stub_id}) do
+          r = n.class.source().get_one "#{self.resource_path}/#{stub_id}"
+          body = n.class.body_root(r)
+          n.init_from_hash(body, true)
+        end
+        n
+      end
     end
 
     def resource_path
@@ -51,18 +61,6 @@ module Arrest
 
     def resource_location
       self.class.resource_path + '/' + self.id.to_s 
-    end
-
-
-    def unstub
-      return unless @stub
-      r = self.class.source().get_one "#{self.resource_path}/#{id}"
-      body = self.class.body_root(r)
-      underscored_hash = {}
-      body.each_pair do |k, v|
-        underscored_hash[StringUtils.underscore k] = v
-      end
-      init_from_hash underscored_hash
     end
 
   end

@@ -9,8 +9,9 @@ class NestedResourcesTest < Test::Unit::TestCase
   end
 
   def test_instance_test
-    n = ANestedClass.new({:name => "foo"})
+    n = ANestedClass.new({:name => "foo", :underscore_name => "Bar"})
     assert_equal "foo", n.name
+    assert_equal "Bar", n.underscore_name
   end
 
   def test_from_hash
@@ -19,6 +20,7 @@ class NestedResourcesTest < Test::Unit::TestCase
       :bool => false,
       :nested_object => { 
         :name => 'iamnested',
+        :underscore_name => 'foo',
         :bool => true
       }
     }
@@ -37,6 +39,7 @@ class NestedResourcesTest < Test::Unit::TestCase
       :bool => false,
       :nested_object => { 
         :name => 'iamnested',
+        :underscore_name => 'foo',
         :bool => true
       }
     }
@@ -49,6 +52,7 @@ class NestedResourcesTest < Test::Unit::TestCase
       'bool' => false,
       'nestedObject' => { 
         'name' => 'iamnested',
+        'underscore_name' => 'foo',
         'bool' => true
       }
     }
@@ -81,9 +85,11 @@ class NestedResourcesTest < Test::Unit::TestCase
       'nestedObjects' => [
         { 
         'name' => 'iamnested_one',
+        'underscore_name' => nil,
         'bool' => true
         },{ 
         'name' => 'iamnested_two',
+        'underscore_name' => nil,
         'bool' => false
         }
       ]

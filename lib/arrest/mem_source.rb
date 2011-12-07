@@ -25,24 +25,19 @@ module Arrest
     end
 
     def initialize
-    @@all_objects = {} # holds all objects of all types,
+      @@all_objects = {} # holds all objects of all types,
 
-    @@collections = {} # maps urls to collections of ids of objects
-    @@random = Random.new(42)
+      @@collections = {} # maps urls to collections of ids of objects
+      @@random = Random.new(42)
 
     end
 
-    def debug s
-      if Arrest::Source.debug
-        puts s
-      end
-    end
 
     # only to stub collection for development
     #
     def set_collection clazz, scope, objects
       url = clazz.scoped_path scope
-      self.class.debug "url:#{url}"
+      Arrest::debug "url:#{url}"
       @@data[url] = objects
     end
 
@@ -67,7 +62,7 @@ module Arrest
     end
 
     def get_many sub, filters = {}
-      debug sub + (hash_to_query filters)
+      Arrest::debug sub + (hash_to_query filters)
       # filters are ignored by mem impl so far
 
       id_list = @@collections[sub] || []
@@ -80,7 +75,7 @@ module Arrest
     end
 
     def get_one sub, filters = {}
-      debug sub + (hash_to_query filters)
+      Arrest::debug sub + (hash_to_query filters)
       # filters are ignored by mem impl so far
       idx = sub.rindex '/'
       if idx
@@ -90,12 +85,12 @@ module Arrest
       if val == nil
         raise Errors::DocumentNotFoundError
       end
-      wrap val.to_hash.to_json, 1
+      wrap val.to_jhash.to_json, 1
     end
     
     def collection_json values
       single_jsons = values.map do |v|
-        v.to_hash.to_json
+        v.to_jhash.to_json
       end
       "[#{single_jsons.join(',')}]"
     end
@@ -133,6 +128,7 @@ module Arrest
     end
 
     def post rest_resource
+      Arrest::debug "post -> #{rest_resource.class.name} #{rest_resource.to_hash} #{rest_resource.class.all_fields.map(&:name)}"
       raise "new object must have setter for id" unless rest_resource.respond_to?(:id=)
       raise "new object must not have id" if rest_resource.respond_to?(:id) && rest_resource.id != nil
       rest_resource.id = next_id
@@ -140,7 +136,7 @@ module Arrest
       unless @@data[rest_resource.resource_path()] != nil
         @@data[rest_resource.resource_path()] = {}
       end
-      debug "child path #{rest_resource.resource_path()}"
+      Arrest::debug "child path #{rest_resource.resource_path()}"
       @@data[rest_resource.resource_path()][next_id.to_s] = rest_resource.id
       if @@collections[rest_resource.resource_path] == nil
         @@collections[rest_resource.resource_path] = []

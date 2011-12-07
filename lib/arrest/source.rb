@@ -6,6 +6,7 @@ module Arrest
       attr_reader :source
       attr_reader :mod
       attr_reader :header_decorator
+      attr_accessor :json_key_converter
 
       def source=(host=nil)
         if host == nil || host.blank?
@@ -41,9 +42,25 @@ module Arrest
         {}
       end
 
+      def key_from_json name
+        StringUtils.underscore(name.to_s)
+      end
+
+      def key_to_json name
+        StringUtils.classify(name.to_s,false)
+      end
+
     end
   end
   Source.mod = nil
   Source.header_decorator = Source
   Source.debug = false
+  Source.json_key_converter = Source
+
+  def self.debug s
+    if Arrest::Source.debug
+      puts s
+    end
+  end
+
 end

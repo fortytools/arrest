@@ -5,11 +5,12 @@ end
 module Arrest
 
   class Attribute
-    attr_accessor :name, :read_only, :clazz
+    attr_accessor :name, :read_only, :clazz, :json_name
     def initialize name, read_only, clazz
-      @name = name
+      @name = name.to_sym
       @read_only = read_only
       @clazz = clazz
+      @json_name = Source.json_key_converter.key_to_json(name).to_sym
     end
 
     def convert value
