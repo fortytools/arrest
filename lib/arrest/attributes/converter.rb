@@ -24,6 +24,7 @@ module Arrest
     end
 
     def to_hash value
+      return nil unless value != nil
       value
     end
   end
@@ -39,6 +40,7 @@ module Arrest
     end
 
     def to_hash val
+      return nil unless val!= nil
       val.to_hash
     end
   end
@@ -57,6 +59,7 @@ module Arrest
     end
 
     def to_hash value
+      return nil unless value != nil
       raise "Expected an array but got #{value.class.name}" unless value.is_a?(Array)
       value.map(&:to_hash)
     end

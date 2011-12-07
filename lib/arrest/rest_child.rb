@@ -3,7 +3,6 @@ module Arrest
     attr_accessor :parent
     def initialize parent, h
       super h
-      puts "PARENT #{parent} #{parent.id}"
       @parent = parent
     end
 
@@ -23,7 +22,6 @@ module Arrest
 
 
       def all_for parent
-        puts "all_for #{parent} - #{parent.id}"
         raise "Parent has no id yet" unless parent.id
         body_root(source().get_many self.resource_path_for(parent)).map do |h|
           self.build(parent, h)

@@ -1,4 +1,9 @@
 module Arrest
+  def self.debug s
+    if Arrest::Source.debug
+      puts s
+    end
+  end
 
   class Source 
     class << self
@@ -28,7 +33,7 @@ module Arrest
       end
 
       def header_decorator=(hd=nil)
-        puts "Setting headerd to #{hd}"
+        Arrest::debug "Setting headerd to #{hd}"
         if hd == nil
           @header_decorator = self
         elsif hd.respond_to?(:headers)
@@ -56,11 +61,5 @@ module Arrest
   Source.header_decorator = Source
   Source.debug = false
   Source.json_key_converter = Source
-
-  def self.debug s
-    if Arrest::Source.debug
-      puts s
-    end
-  end
 
 end
