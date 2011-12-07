@@ -18,6 +18,10 @@ module Arrest
      end
     end
 
+    def inspect
+      @children.inspect
+    end
+
     private
 
 
