@@ -28,11 +28,7 @@ module Arrest
       end
 
       def build hash
-        underscored_hash = {}
-        hash.each_pair do |k, v|
-          underscored_hash[StringUtils.underscore k] = v
-        end
-        self.new underscored_hash
+        self.new hash, true
       end
 
       def custom_resource_name new_name
@@ -97,8 +93,8 @@ module Arrest
 
     attr_accessor :id
 
-    def initialize  hash={}
-      initialize_has_attributes hash
+    def initialize  hash={}, from_json = false
+      initialize_has_attributes hash, from_json
     end
 
     def save

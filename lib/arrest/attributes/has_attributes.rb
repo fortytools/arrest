@@ -3,22 +3,22 @@ module Arrest
   module HasAttributes
     attr_accessor :attribute_values
 
-    def initialize_has_attributes hash, &blk
+    def initialize_has_attributes hash, from_json = false, &blk
       if block_given?
         @stubbed = true
         @load_blk = blk
       else
         @stubbed = false
       end
-      init_from_hash hash
+      init_from_hash hash, from_json
     end
 
-    def initialize hash = {}, &blk
+    def initialize hash = {}, from_json = false, &blk
       if block_given?
         @stubbed = true
         @load_blk = blk
       else
-        init_from_hash hash
+        init_from_hash hash, from_json
       end
     end
 
