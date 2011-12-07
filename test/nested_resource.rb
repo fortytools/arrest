@@ -46,18 +46,7 @@ class NestedResourcesTest < Test::Unit::TestCase
 
     actual = WithNested.new(input)
 
-    # we expect camel cased keys
-    expected = {
-      'parentName' => 'parent',
-      'bool' => false,
-      'nestedObject' => { 
-        'name' => 'iamnested',
-        'underscore_name' => 'foo',
-        'bool' => true
-      }
-    }
-
-    assert_equal_hashes expected, actual.to_hash
+    assert_equal_hashes input, actual.to_hash
 
   end
 
@@ -78,24 +67,7 @@ class NestedResourcesTest < Test::Unit::TestCase
 
     actual = WithManyNested.new(input)
 
-    # we expect camel cased keys
-    expected = {
-      'parentName' => 'parent',
-      'bool' => false,
-      'nestedObjects' => [
-        { 
-        'name' => 'iamnested_one',
-        'underscore_name' => nil,
-        'bool' => true
-        },{ 
-        'name' => 'iamnested_two',
-        'underscore_name' => nil,
-        'bool' => false
-        }
-      ]
-    }
-
-    assert_equal_hashes expected, actual.to_hash
+    assert_equal_hashes input, actual.to_hash
 
   end
 
@@ -115,19 +87,7 @@ class NestedResourcesTest < Test::Unit::TestCase
 
     actual = WithNestedBelongingTo.new(input)
 
-    # we expect camel cased keys
-    expected = {
-      'parentName' => 'parent',
-      'bool' => false,
-      'nestedObject' => { 
-        'name' => 'iamnested',
-        'bool' => true,
-        'zooId' => new_zoo.id
-
-      }
-    }
-
-    assert_equal_hashes expected, actual.to_hash
+    assert_equal_hashes input, actual.to_hash
 
     zoo = actual.nested_object.zoo
     assert_equal "Foo", zoo.name

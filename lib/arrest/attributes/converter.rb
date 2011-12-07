@@ -13,7 +13,7 @@ module Arrest
       @json_name = Source.json_key_converter.key_to_json(name).to_sym
     end
 
-    def convert value
+    def from_hash value
       return if value == nil
       converter = CONVERTER[@clazz]
       if converter == nil
@@ -22,6 +22,10 @@ module Arrest
       end
       converter.convert value
     end
+
+    def to_hash value
+      value
+    end
   end
 
   class NestedAttribute < Attribute
@@ -29,9 +33,13 @@ module Arrest
       super name, read_only, clazz
     end
 
-    def convert value
-      return unless value
+    def from_hash value
+      return nil unless value != nil
       @clazz.new value
+    end
+
+    def to_hash val
+      val.to_hash
     end
   end
 
@@ -40,12 +48,17 @@ module Arrest
       super name, read_only, clazz
     end
 
-    def convert value
-      return unless value
+    def from_hash value
+      return nil unless value != nil
       raise "Expected an array but got #{value.class.name}" unless value.is_a?(Array)
       value.map do |v|
         @clazz.new v
       end
+    end
+
+    def to_hash value
+      raise "Expected an array but got #{value.class.name}" unless value.is_a?(Array)
+      value.map(&:to_hash)
     end
 
   end

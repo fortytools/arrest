@@ -39,7 +39,7 @@ module Arrest
           key = field.name
         end
         value = as[key] 
-        converted = field.convert(value)
+        converted = field.from_hash(value)
         self.send(field.name.to_s + '=', converted) unless converted == nil
       end
     end
@@ -63,10 +63,10 @@ module Arrest
           json_name = field.name
         end
         val = self.send(field.name)
-        if val != nil && val.is_a?(NestedResource)
-          val = val.to_hash
+        converted = field.to_hash val
+        if converted != nil
+          result[json_name] = converted
         end
-        result[json_name] = val
       end
       result
     end
