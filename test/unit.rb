@@ -5,7 +5,7 @@ class FirstTest < Test::Unit::TestCase
 
   def setup
      Arrest::Source.source = nil
-     Arrest::Source.debug = true
+     #Arrest::Source.debug = true
   end
 
   def test_mem_src
