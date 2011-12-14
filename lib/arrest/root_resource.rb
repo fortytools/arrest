@@ -24,6 +24,18 @@ module Arrest
         self.build body.merge({:id => id})
       end
 
+      def filter name, &aproc
+        if aproc != nil
+          send :define_singleton_method, name do |args|
+            self.all.select do |instance|
+              instance.instance_exec(args, &aproc)
+            end
+          end
+        else
+          raise "You must specify a block for a filter"
+        end
+      end
+
       def scope name, &block
         super(name)
         if block_given?

@@ -67,3 +67,10 @@ class CustomNamedBelongsTo < Arrest::RootResource
   belongs_to :zoo_thing, { :field_name => :schinken, :class_name => :Zoo}
   belongs_to :zoo, { :field_name => :batzen}
 end
+
+class ParamScope < Arrest::RootResource
+  attribute :afield, String
+
+  filter(:nnn) {|s| afield == s}
+
+end

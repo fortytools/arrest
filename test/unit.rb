@@ -15,10 +15,8 @@ class FirstTest < Test::Unit::TestCase
   end
 
   def test_init
-    puts "test_init NOWWWWWW #{Arrest::Source::source.objects.length}"
     zooname =  "Hagenbecks"
     z = Zoo.new({:name => zooname})
-    puts "aaa #{z.attribute_values.inspect}"
     assert_equal zooname, z.name
     #assert_not_empty Arrest::AbstractResource.all_fields.select {|f| f.name == :id}, "AbstractResource defines the id field itself"
     #assert_not_empty Arrest::RootResource.all_fields.select {|f| f.name == :id}, "RootResource should inherit id from AbstractResource"
@@ -106,7 +104,6 @@ class FirstTest < Test::Unit::TestCase
     assert new_animal.id != nil
 
     zoo_reloaded = Zoo.find(new_zoo.id)
-    puts "--1 #{zoo_reloaded.to_hash}"
     assert_equal new_zoo.id, zoo_reloaded.id
     assert_equal new_animal.parent.id, zoo_reloaded.id
 
@@ -140,7 +137,6 @@ class FirstTest < Test::Unit::TestCase
   end
 
   def test_inheritance
-    puts "NOWWWWWW #{Arrest::Source::source.objects.length}"
     new_zoo = SpecialZoo.new({:name => "Foo", :is_magic => true})
     assert_equal "Foo", new_zoo.name
     assert_equal true, new_zoo.is_magic
@@ -273,6 +269,17 @@ class FirstTest < Test::Unit::TestCase
     assert_equal 1, Zoo.all.first.animals.males_only.length
     assert_equal true, Zoo.all.first.animals.males_only.first.male
 
+  end
+
+
+  def test_para_scope
+    p1 = ParamScope.new({:afield => "Foo"})
+    p2 = ParamScope.new({:afield => "Bar"})
+    p1.save
+    p2.save
+
+    nnn = ParamScope.nnn("Foo")
+    assert_equal ["Foo"], nnn.map(&:afield)
   end
 end
 
