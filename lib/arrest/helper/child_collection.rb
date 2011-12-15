@@ -1,5 +1,5 @@
 module Arrest
-  class ChildCollection < BasicObject
+  class ChildCollection #< BasicObject
     def initialize parent, clazz_name
       @parent = parent
       @clazz_name = clazz_name
@@ -12,14 +12,16 @@ module Arrest
 
     def method_missing(*args, &block)
      if resolved_class.respond_to?(args[0])
-       resolved_class.send(args[0], @parent)
+       sub_args = [@parent]
+       sub_args += args.drop(1)
+       resolved_class.send(args[0], *sub_args)
      else
        children.send(*args, &block)
      end
     end
 
     def inspect
-      @children.inspect
+      children.inspect
     end
 
     private

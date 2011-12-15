@@ -38,6 +38,18 @@ module Arrest
         self.build body
       end
 
+      def filter name, &aproc
+        if aproc != nil
+          send :define_singleton_method, name do |*args|
+            self.all_for(args[0]).select do |instance|
+              instance.instance_exec(*(args.drop(1)), &aproc)
+            end
+          end
+        else
+          raise "You must specify a block for a filter"
+        end
+      end
+
       def scope name, &block
         super name
         if block_given?

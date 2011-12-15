@@ -271,15 +271,31 @@ class FirstTest < Test::Unit::TestCase
 
   end
 
-
-  def test_para_scope
-    p1 = ParamScope.new({:afield => "Foo"})
-    p2 = ParamScope.new({:afield => "Bar"})
+  def test_para_filter
+    p1 = ParentFilter.new({:afield => "Foo"})
+    p2 = ParentFilter.new({:afield => "Bar"})
     p1.save
     p2.save
 
-    nnn = ParamScope.nnn("Foo")
+    nnn = ParentFilter.nnn("Foo")
     assert_equal ["Foo"], nnn.map(&:afield)
+  end
+
+  def test_para_filter_child
+    p1 = ParentFilter.new({:afield => "ParentFoo"})
+    p1.save
+
+    c1 = ChildFilter.new(p1, :bfield => "Foo") 
+    c1.save
+    c2 = ChildFilter.new(p1, :bfield => "Bar") 
+    c2.save
+
+    reloaded_parent = ParentFilter.find(p1.id)
+    assert_not_nil reloaded_parent
+    assert_equal "ParentFoo", reloaded_parent.afield
+    assert_equal 2, reloaded_parent.child_filters.length
+
+    assert_equal ["Foo"], reloaded_parent.child_filters.child_nnn("Foo").map(&:bfield)
   end
 end
 
