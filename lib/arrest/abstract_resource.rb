@@ -1,11 +1,13 @@
 require 'json'
 require 'arrest/string_utils'
 require 'time'
+require 'active_model'
 
 Scope = Struct.new(:name, :block)
 
 module Arrest
   class AbstractResource
+    extend ActiveModel::Naming
     include HasAttributes
     attribute :id, String
     class << self
