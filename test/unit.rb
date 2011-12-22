@@ -42,6 +42,35 @@ class FirstTest < Test::Unit::TestCase
     assert_equal new_zoo.id, zoo_reloaded.id
   end
 
+  def test_prsnc_valid
+    invalid_params = [
+      {},
+      {:name => nil},
+      {:name => ''}
+    ]
+
+    invalid_params.each do |p|
+      zoo_count_before = Zoo.all.length
+      new_zoo = Zoo.new(p)
+      assert_equal false, new_zoo.save, "zoo without name shouldnt be persistable"
+      assert_equal zoo_count_before, Zoo.all.length
+      assert_equal :name, new_zoo.errors.first.attribute
+      assert_nil new_zoo.id
+
+      new_zoo.name = "Foo"
+
+      assert new_zoo.save, "Creating should be possible after setting a name"
+      zoo_count_after = Zoo.all.length
+      assert_not_nil new_zoo.id
+
+      assert_equal (zoo_count_before + 1), zoo_count_after
+      assert new_zoo.id != nil
+
+      new_zoo.name = ""
+      assert_equal false, new_zoo.save, "Shouldnt be able to update without a name"
+    end
+  end
+
   def test_delete
     zoo_count_before = Zoo.all.length
     new_zoo = Zoo.new({:name => "Foo"})

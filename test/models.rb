@@ -7,6 +7,8 @@ class Zoo < Arrest::RootResource
 
   scope :server_scope
   scope(:open) { |z| z.open }
+
+  validates_presence_of :name
 end
 
 class Animal < Arrest::RestChild

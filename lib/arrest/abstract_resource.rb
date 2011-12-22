@@ -9,7 +9,11 @@ module Arrest
   class AbstractResource
     extend ActiveModel::Naming
     include HasAttributes
+    include Validatable
     attribute :id, String
+
+    attr_accessor :errors
+
     class << self
       attr_reader :scopes
 
@@ -100,8 +104,13 @@ module Arrest
     end
 
     def save
-      verb = new_record? ? :post : :put
-      !!AbstractResource::source.send(verb, self)
+      self.errors = self.validate
+      if self.errors.empty?
+        verb = new_record? ? :post : :put
+        !!AbstractResource::source.send(verb, self)
+      else
+        false
+      end
     end
 
     def new_record?
