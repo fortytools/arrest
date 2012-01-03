@@ -47,7 +47,7 @@ module Arrest
 
     def put rest_resource
       raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
-      hash = rest_resource.to_hash
+      hash = rest_resource.to_jhash
       hash.delete(:id)
       hash.delete("id")
 

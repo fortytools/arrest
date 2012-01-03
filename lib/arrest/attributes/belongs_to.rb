@@ -18,7 +18,6 @@ module Arrest
           class_name = params[:class_name].to_s unless params[:class_name] == nil
           read_only =  params[:read_only] == true
         end
-        attributes({field_name.to_sym => String})
         add_attribute(Attribute.new(field_name.to_sym, read_only, String))
         send :define_method, name do
           val = self.send(field_name)
