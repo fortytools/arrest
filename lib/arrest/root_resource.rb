@@ -32,7 +32,7 @@ module Arrest
 
       def filter name, &aproc
         if aproc != nil
-          send :define_singleton_method, name do |args|
+          send :define_singleton_method, name do |args = nil|
             self.all.select do |instance|
               instance.instance_exec(args, &aproc)
             end

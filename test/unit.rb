@@ -326,5 +326,15 @@ class FirstTest < Test::Unit::TestCase
 
     assert_equal ["Foo"], reloaded_parent.child_filters.child_nnn("Foo").map(&:bfield)
   end
+
+  def test_no_param_filter
+    p1 = ParentFilter.new({:afield => "Foo"})
+    p2 = ParentFilter.new({:afield => "Bar"})
+    p1.save
+    p2.save
+
+    no_param = ParentFilter.no_param
+    assert_equal ["Foo"], no_param.map(&:afield)
+  end
 end
 

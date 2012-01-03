@@ -75,6 +75,8 @@ class ParentFilter < Arrest::RootResource
   attribute :afield, String
 
   filter(:nnn) {|s| afield == s}
+  filter(:no_param){ afield == "Foo"}
+  filter(:running){ afield == "Foo"}
   has_many :child_filters
 end
 
