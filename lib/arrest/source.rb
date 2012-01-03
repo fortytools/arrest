@@ -16,8 +16,10 @@ module Arrest
       def source=(host=nil)
         if host == nil || host.blank?
           @source = MemSource.new
+          Arrest::logger.info "Setting Arrest host empty in-memory-store"
         else
           @source = HttpSource.new host 
+          Arrest::logger.info "Setting Arrest host to #{host}"
         end
         @source
       end

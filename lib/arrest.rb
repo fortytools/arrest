@@ -1,4 +1,7 @@
+require 'logger'
+
 require "arrest/version"
+require 'arrest/helper/logger'
 
 require "arrest/attributes/belongs_to"
 require "arrest/attributes/has_attributes"
@@ -18,5 +21,3 @@ require "arrest/abstract_resource"
 require "arrest/root_resource"
 require "arrest/rest_child"
 
-module Arrest
-end

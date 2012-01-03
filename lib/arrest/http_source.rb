@@ -29,7 +29,11 @@ module Arrest
     end
 
     def get_many sub, filter={}
-      get_one sub, filter
+      response = self.connection().get do |req|
+        req.url sub, filter
+        add_headers req.headers
+      end
+      response.body
     end
 
     def delete rest_resource
@@ -88,6 +92,7 @@ module Arrest
         builder.request  :json
         builder.response :logger
         builder.adapter  :net_http
+        builder.use Faraday::Response::Logger, Arrest::logger
       end
     end
 

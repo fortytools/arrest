@@ -23,8 +23,12 @@ module Arrest
 
       def all_for parent
         raise "Parent has no id yet" unless parent.id
-        body_root(source().get_many self.resource_path_for(parent)).map do |h|
-          self.build(parent, h)
+        begin
+          body_root(source().get_many self.resource_path_for(parent)).map do |h|
+            self.build(parent, h)
+          end
+        rescue Arrest::Errors::DocumentNotFoundError
+          []
         end
       end
 

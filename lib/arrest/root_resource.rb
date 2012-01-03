@@ -8,7 +8,12 @@ module Arrest
       end
 
       def all filter={}
-        body = body_root(source().get_many self.resource_path, filter)
+        begin
+          body = body_root(source().get_many self.resource_path, filter)
+        rescue Arrest::Errors::DocumentNotFoundError
+          Arrest::logger.info "DocumentNotFoundError for #{self.resource_path} gracefully returning []"
+          return []
+        end
         body ||= []
         body.map do |h|
           self.build h
@@ -19,6 +24,7 @@ module Arrest
         r = source().get_one "#{self.resource_path}/#{id}"
         body = body_root(r)
         if body == nil || body.empty?
+          Arrest::logger.info "DocumentNotFoundError for #{self.resource_path}/#{id}"
           raise Errors::DocumentNotFoundError.new
         end
         self.build body.merge({:id => id})
