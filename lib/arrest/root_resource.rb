@@ -7,6 +7,19 @@ module Arrest
         "#{self.resource_name}"
       end
 
+      def by_url url
+        begin
+          body = body_root(source().get_many url)
+        rescue Arrest::Errors::DocumentNotFoundError
+          Arrest::logger.info "DocumentNotFoundError for #{url} gracefully returning []"
+          return []
+        end
+        body ||= []
+        body.map do |h|
+          self.build h
+        end
+      end
+
       def all filter={}
         begin
           body = body_root(source().get_many self.resource_path, filter)

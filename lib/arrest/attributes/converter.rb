@@ -109,6 +109,10 @@ module Arrest
     target Integer
   end
 
+  class ArrayConv < IdentConv
+    target Array
+  end
+
   class TimeConv < Converter
     target Time
 

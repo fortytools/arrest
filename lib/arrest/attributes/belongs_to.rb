@@ -21,6 +21,9 @@ module Arrest
         add_attribute(Attribute.new(field_name.to_sym, read_only, String))
         send :define_method, name do
           val = self.send(field_name)
+          if val == nil || val == ""
+            return nil
+          end
           begin
             Arrest::Source.mod.const_get(class_name).find(val)
           rescue Errors::DocumentNotFoundError => e

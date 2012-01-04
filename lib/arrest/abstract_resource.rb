@@ -49,6 +49,31 @@ module Arrest
        end
       end
 
+      def has_many(*args)
+        method_name, options = args
+        singular = (StringUtils.singular(method_name.to_s) + '_ids').to_sym
+        method_name = method_name.to_sym
+
+        clazz_name = method_name.to_s
+        if options
+          clazz = options[:class_name]
+          if clazz
+            clazz_name = clazz.to_s
+          end
+        end
+        attribute singular, Array
+        send :define_method, method_name do
+          if @has_many_collections == nil
+            @has_many_collections = {}
+          end
+          if @has_many_collections[method_name] == nil
+            @has_many_collections[method_name] = HasManyCollection.new(self, (StringUtils.classify (StringUtils.singular clazz_name)))
+          end
+
+          @has_many_collections[method_name]
+        end
+      end
+
       def children(*args)
         method_name, options = args
         method_name = method_name.to_sym

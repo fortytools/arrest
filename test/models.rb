@@ -9,6 +9,8 @@ class Zoo < Arrest::RootResource
   scope(:open) { |z| z.open }
 
   validates_presence_of :name
+
+  belongs_to :zoo_owner
 end
 
 class Animal < Arrest::RestChild
@@ -21,6 +23,12 @@ class Animal < Arrest::RestChild
   scope :server_males_only
   scope(:males_only){|a| a.male}
 end
+
+class ZooOwner < Arrest::RootResource
+  attribute :name, String
+  has_many :zoos
+end
+
 
 class SpecialZoo < Zoo
   custom_resource_name :zoo3000

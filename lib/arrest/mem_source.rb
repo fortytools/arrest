@@ -145,6 +145,10 @@ module Arrest
       true
     end
 
+    def cheat_collection url, ids
+        @@collections[url] = ids
+    end
+
     def next_id
       (0...32).map{ ('a'..'z').to_a[@@random.rand(26)] }.join
     end

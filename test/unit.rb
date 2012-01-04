@@ -290,11 +290,16 @@ class FirstTest < Test::Unit::TestCase
     new_zoo = Zoo.new({:name => "Foo"})
     new_zoo.save
 
+    new_zoo2 = Zoo.new({:name => "Boo"})
+    new_zoo2.save
+
     animal_kind = "mouse"
     Animal.new(new_zoo, {:kind => animal_kind, :age => 42, :male => true}).save
     Animal.new(new_zoo, {:kind => animal_kind, :age => 42, :male => false}).save
+    Animal.new(new_zoo2, {:kind => animal_kind, :age => 42, :male => false}).save
 
     assert_equal 2, Zoo.all.first.animals.length
+    assert_equal 1, Zoo.all.last.animals.length
     assert_equal 1, Zoo.all.first.animals.males_only.length
     assert_equal true, Zoo.all.first.animals.males_only.first.male
 
@@ -335,6 +340,54 @@ class FirstTest < Test::Unit::TestCase
 
     no_param = ParentFilter.no_param
     assert_equal ["Foo"], no_param.map(&:afield)
+  end
+
+  def test_has_many
+    Zoo.new(:name => "Foo1").save
+    Zoo.new(:name => "Foo2").save
+    assert_equal 2, Zoo.all.length
+    all_zoo_ids = Zoo.all.map(&:id)
+    v1 = ZooOwner.new({:name => "Foo", :zoo_ids => all_zoo_ids})
+    v1.save
+
+    v1_reloaded = ZooOwner.all.first
+    assert_equal all_zoo_ids, v1_reloaded.zoo_ids
+
+    url = v1.resource_location + '/' + Zoo.resource_name
+    Arrest::Source.source.cheat_collection(url, v1_reloaded.zoo_ids)
+    assert_equal 2,v1_reloaded.zoos.length
+    assert_equal "Foo1", v1_reloaded.zoos.first.name
+  end
+
+  def test_build
+    v1 = ZooOwner.new({:name => "Foo"})
+    v1.save
+
+    zoo = v1.zoos.build
+    assert_equal v1.id, zoo.zoo_owner_id
+  end
+
+  def test_scope_has_many
+    z1 = Zoo.new(:name => "Foo1", :open => true)
+    z1.save
+    z2 = Zoo.new(:name => "Foo2", :open => false)
+    z2.save
+    z3 = Zoo.new(:name => "Foo3", :open => true)
+    z3.save
+    assert_equal 3, Zoo.all.length
+    all_zoo_ids = [z1.id, z2.id]
+    v1 = ZooOwner.new({:name => "Foo", :zoo_ids => all_zoo_ids})
+    v1.save
+
+    v1_reloaded = ZooOwner.all.first
+    assert_equal all_zoo_ids, v1_reloaded.zoo_ids
+
+    url = v1.resource_location + '/' + Zoo.resource_name
+    Arrest::Source.source.cheat_collection(url, v1_reloaded.zoo_ids)
+    assert_equal 2,v1_reloaded.zoos.length
+    assert_equal "Foo1", v1_reloaded.zoos.first.name
+
+    assert_equal 1, v1_reloaded.zoos.open.length
   end
 end
 
