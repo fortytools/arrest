@@ -3,7 +3,7 @@ require 'arrest'
 class Zoo < Arrest::RootResource
   attributes({ :name => String , :open => Boolean})
   read_only_attributes({ :ro1 => String})
-  has_many :animals
+  children :animals
 
   scope :server_scope
   scope(:open) { |z| z.open }
@@ -77,7 +77,7 @@ class ParentFilter < Arrest::RootResource
   filter(:nnn) {|s| afield == s}
   filter(:no_param){ afield == "Foo"}
   filter(:running){ afield == "Foo"}
-  has_many :child_filters
+  children :child_filters
 end
 
 class ChildFilter < Arrest::RestChild

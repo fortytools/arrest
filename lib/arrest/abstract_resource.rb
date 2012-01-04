@@ -49,7 +49,7 @@ module Arrest
        end
       end
 
-      def has_many(*args)
+      def children(*args)
         method_name, options = args
         method_name = method_name.to_sym
 
