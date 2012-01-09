@@ -26,7 +26,7 @@ module Arrest
 
     def children
       if @children == nil
-        url = @parent.resource_location + '/' + resolved_class.resource_name
+        url = @parent.resource_location + '/' + resolved_class.resource_name.to_s
         @children = resolved_class.by_url(url)
       end
       @children
