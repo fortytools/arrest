@@ -1,8 +1,9 @@
 require 'test/unit'
 require 'arrest'
+require 'active_model'
 
 class PresenceOfClass
-  include Arrest::Validatable
+  include ActiveModel::Validations
   attr_accessor :foo
 
   validates_presence_of :foo
@@ -13,7 +14,7 @@ class PresenceOfClass
 end
 
 class PresenceOfTwo
-  include Arrest::Validatable
+  include ActiveModel::Validations
   attr_accessor :foo, :bar
 
   validates_presence_of :foo
@@ -37,10 +38,10 @@ class InheritedPresence < PresenceOfClass
 end
 
 class CustomVal
-  include Arrest::Validatable
+  include ActiveModel::Validations
   attr_accessor :foo
 
-  validates :is_foo
+  validate :is_foo
 
   def initialize foo=nil
     @foo = foo
@@ -48,10 +49,20 @@ class CustomVal
   
   def is_foo
     if self.foo != "Foo"
-      [Arrest::Validations::ValidationError.new(:foo, "is no foo")]
-    else
-      []
+      errors.add(:foo, "is not foo")
     end
+  end
+end
+
+class InclusionOfClass
+  include ActiveModel::Validations
+
+  attr_accessor :foo
+
+  validates :foo, :inclusion => { :in => ["Foo", "Bar"] }
+
+  def initialize foo
+    @foo = foo
   end
 end
 
@@ -122,17 +133,6 @@ class ValidationsTest < Test::Unit::TestCase
 
   # ================ inclusion_of ======
 
-  class InclusionOfClass
-    include Arrest::Validatable
-
-    attr_accessor :foo
-
-    validates_inclusion_of :foo, :in => ["Foo", "Bar"]
-
-    def initialize foo
-      @foo = foo
-    end
-  end
 
   def test_inclusion_of
     invalids = [nil, '', "Baz", "foo", 3, true]
@@ -142,7 +142,6 @@ class ValidationsTest < Test::Unit::TestCase
     invalids.each do |iv|
       o = InclusionOfClass.new(iv)
       assert o.valid? == false, "#{iv} is not valid"
-      assert o.validate.map(&:attribute).include?(:foo), ":foo should be in list of invalid attributes when created with #{iv}"
     end
 
     valids.each do |v|

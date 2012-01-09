@@ -54,7 +54,7 @@ class FirstTest < Test::Unit::TestCase
       new_zoo = Zoo.new(p)
       assert_equal false, new_zoo.save, "zoo without name shouldnt be persistable"
       assert_equal zoo_count_before, Zoo.all.length
-      assert_equal :name, new_zoo.errors.first.attribute
+      assert_equal :name, new_zoo.errors.first[0]
       assert_nil new_zoo.id
 
       new_zoo.name = "Foo"

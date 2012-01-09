@@ -8,11 +8,10 @@ Scope = Struct.new(:name, :block)
 module Arrest
   class AbstractResource
     extend ActiveModel::Naming
+    include ActiveModel::Validations
+    include ActiveModel::Conversion
     include HasAttributes
-    include Validatable
     attribute :id, String
-
-    attr_accessor :errors
 
     class << self
       attr_reader :scopes
@@ -129,8 +128,7 @@ module Arrest
     end
 
     def save
-      self.errors = self.validate
-      if self.errors.empty?
+      if self.valid?
         verb = new_record? ? :post : :put
         !!AbstractResource::source.send(verb, self)
       else
