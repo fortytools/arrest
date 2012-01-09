@@ -5,7 +5,7 @@ module Arrest
     end
   end
 
-  class Source 
+  class Source
     class << self
       attr_accessor :debug
       attr_reader :source
@@ -14,11 +14,11 @@ module Arrest
       attr_accessor :json_key_converter
 
       def source=(host=nil)
-        if host == nil || host.blank?
+        if [nil, ""].include?(host)
           @source = MemSource.new
           Arrest::logger.info "Setting Arrest host empty in-memory-store"
         else
-          @source = HttpSource.new host 
+          @source = HttpSource.new host
           Arrest::logger.info "Setting Arrest host to #{host}"
         end
         @source
