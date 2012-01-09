@@ -387,7 +387,9 @@ class FirstTest < Test::Unit::TestCase
     assert_equal 2,v1_reloaded.zoos.length
     assert_equal "Foo1", v1_reloaded.zoos.first.name
 
-    assert_equal 1, v1_reloaded.zoos.open.length
+    assert_equal 1, v1_reloaded.zoos.open_filter.length
+    assert_equal "Foo1", v1_reloaded.zoos.open_filter.first.name
+    assert_equal 3, Zoo.all.length
   end
 end
 

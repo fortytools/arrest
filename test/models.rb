@@ -7,6 +7,7 @@ class Zoo < Arrest::RootResource
 
   scope :server_scope
   scope(:open) { |z| z.open }
+  filter(:open_filter) { open }
 
   validates_presence_of :name
 

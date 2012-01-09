@@ -45,6 +45,17 @@ module Arrest
 
       def filter name, &aproc
         if aproc != nil
+          if @filters == nil
+            @filters = []
+          end
+          @filters << Filter.new(name, &aproc)
+          send :define_singleton_method, "FILTER_#{name}" do |args = nil|
+            collection = args[0]
+            call_args = args.drop(1)
+            collection.select do |instance|
+              instance.instance_exec(call_args, &aproc)
+            end
+          end
           send :define_singleton_method, name do |args = nil|
             self.all.select do |instance|
               instance.instance_exec(args, &aproc)
@@ -53,6 +64,19 @@ module Arrest
         else
           raise "You must specify a block for a filter"
         end
+      end
+
+      def filters
+        @filters
+      end
+
+      def all_filters
+        all_filters = @filters
+        all_filters ||= []
+        if superclass.respond_to?('filters') && superclass.filters
+          all_fields += superclass.filters
+        end
+        all_filters
       end
 
       def scope name, &block

@@ -5,6 +5,7 @@ module Arrest
       @clazz_name = clazz_name
       @children = nil
       @foreign_key_name = (StringUtils.underscore(@parent.class.name).gsub(/^.*\//, '') + '_id').to_sym
+      define_filters
     end
 
     def build attributes = {}
@@ -13,18 +14,7 @@ module Arrest
     end
 
     def method_missing(*args, &block)
-     if resolved_class.respond_to?(args[0])
-       #sub_args = [@parent]
-       #sub_args += args.drop(1)
-       #puts "#{resolved_class.name} - #{args[0]} : #{args} subargs : #{sub_args} "
-
-       #resolved_class.send(args[0], *sub_args)
-       r = []
-       children.find_all(&block).each {|x| r << x }
-       r
-     else
        children.send(*args, &block)
-     end
     end
 
     def inspect
@@ -47,6 +37,18 @@ module Arrest
         @clazz = Source.mod.const_get(@clazz_name)
       end
       @clazz
+    end
+
+
+    def define_filters
+      resolved_class.all_filters.each do |filter|
+        self.instance_eval <<-"end_eval"
+          def #{filter.name} *args
+            real_args = [children] + args
+            #{resolved_class.name}.FILTER_#{filter.name}(real_args)
+          end
+        end_eval
+      end
     end
 
   end
