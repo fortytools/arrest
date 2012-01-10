@@ -2,8 +2,7 @@ require 'test/unit'
 require 'arrest'
 require 'active_model'
 
-class PresenceOfClass
-  include ActiveModel::Validations
+class PresenceOfClass < Arrest::RootResource
   attr_accessor :foo
 
   validates_presence_of :foo
@@ -72,6 +71,7 @@ class ValidationsTest < Test::Unit::TestCase
   def setup
      Arrest::Source.source = nil
      #Arrest::Source.debug = true
+     Arrest::Source.skip_validations = false
   end
 
   def test_prsnc
@@ -80,6 +80,15 @@ class ValidationsTest < Test::Unit::TestCase
 
     o1 = PresenceOfClass.new "Foo"
     assert o1.valid?, "Foo is present and valid!"
+  end
+
+  def test_skip_validations
+    Arrest::Source.skip_validations = true
+    o0 = PresenceOfClass.new nil
+    assert o0.valid? == false, "Foo is '#{o0.foo}' -> not present and thus not valid!"
+    assert o0.save, "When skipping validations, in-mem-storage should work"
+
+    Arrest::Source.skip_validations = false
   end
 
   def test_presence_of_two

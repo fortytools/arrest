@@ -12,6 +12,7 @@ module Arrest
       attr_reader :mod
       attr_reader :header_decorator
       attr_accessor :json_key_converter
+      attr_accessor :skip_validations
 
       def source=(host=nil)
         if [nil, ""].include?(host)
@@ -63,5 +64,6 @@ module Arrest
   Source.header_decorator = Source
   Source.debug = false
   Source.json_key_converter = Source
+  Source.skip_validations = false
 
 end

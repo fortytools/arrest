@@ -128,7 +128,7 @@ module Arrest
     end
 
     def save
-      if self.valid?
+      if Source.skip_validations || self.valid?
         verb = new_record? ? :post : :put
         !!AbstractResource::source.send(verb, self)
       else
