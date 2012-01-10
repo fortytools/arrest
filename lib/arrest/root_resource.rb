@@ -34,6 +34,10 @@ module Arrest
       end
 
       def find id
+        if id == nil || "" == id
+          Arrest::logger.info "DocumentNotFoundError: no id given"
+          raise Errors::DocumentNotFoundError.new
+        end
         r = source().get_one "#{self.resource_path}/#{id}"
         body = body_root(r)
         if body == nil || body.empty?
