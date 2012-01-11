@@ -25,7 +25,12 @@ module Arrest
 
     def to_hash value
       return nil unless value != nil
-      value
+      converter = CONVERTER[@clazz]
+      if converter == nil
+        puts "No converter for: #{@clazz.name}"
+        converter = IdentConv
+      end
+      converter.mk_json value
     end
   end
 
@@ -84,6 +89,10 @@ module Arrest
         end
       end
 
+      def mk_json obj
+        obj
+      end
+
       def target clazz
         @clazz = clazz
         CONVERTER[clazz] = self
@@ -118,6 +127,10 @@ module Arrest
 
     def self.parse value
       Time.parse(value)
+    end
+
+    def self.mk_json time
+      time.strftime "%FT%T%z"
     end
   end
 end

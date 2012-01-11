@@ -391,5 +391,13 @@ class FirstTest < Test::Unit::TestCase
     assert_equal "Foo1", v1_reloaded.zoos.open_filter.first.name
     assert_equal 3, Zoo.all.length
   end
+
+  def test_time
+    now = Time.now
+    expected = now.strftime "%FT%T%z"
+    t = TimeClass.new(:time => now)
+    assert_equal expected, t.to_jhash[:time], "This is the expected default format"
+
+  end
 end
 

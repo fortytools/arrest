@@ -41,6 +41,10 @@ class SpecialZoo < Zoo
 
 end
 
+class TimeClass < Arrest::RootResource
+  attribute :time, Time
+end
+
 class ANestedClass < Arrest::NestedResource
   attribute :name, String
   attribute :underscore_name, String
