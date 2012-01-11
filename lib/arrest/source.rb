@@ -1,3 +1,4 @@
+require "arrest/handler"
 module Arrest
   def self.debug s
     if Arrest::Source.debug
@@ -13,6 +14,7 @@ module Arrest
       attr_reader :header_decorator
       attr_accessor :json_key_converter
       attr_accessor :skip_validations
+      attr_accessor :error_handler
 
       def source=(host=nil)
         if [nil, ""].include?(host)
@@ -38,32 +40,20 @@ module Arrest
       def header_decorator=(hd=nil)
         Arrest::debug "Setting headerd to #{hd}"
         if hd == nil
-          @header_decorator = self
+          @header_decorator = Handlers::Header_decorator
         elsif hd.respond_to?(:headers)
           @header_decorator = hd
         else
           raise "Header_decorator must be an object that returns an hash for the method headers"
         end
       end
-
-      def headers
-        {}
-      end
-
-      def key_from_json name
-        StringUtils.underscore(name.to_s)
-      end
-
-      def key_to_json name
-        StringUtils.classify(name.to_s,false)
-      end
-
     end
   end
   Source.mod = nil
-  Source.header_decorator = Source
+  Source.header_decorator = Handlers::HeaderDecorator
   Source.debug = false
-  Source.json_key_converter = Source
+  Source.json_key_converter = Handlers::KeyConverter
+  Source.error_handler = Handlers::ErrorHandler
   Source.skip_validations = false
 
 end

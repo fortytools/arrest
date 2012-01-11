@@ -80,6 +80,11 @@ module Arrest
         rest_resource.id= id
         true
       else
+        if response.env[:status] != 201
+          err = Arrest::Source.error_handler.convert(response.body)
+          rest_resource.errors_inter.add(err)
+          rest_resource.errors.add(:base, err.to_s)
+        end
         puts "unable to create: #{response.env[:response_headers]} body: #{response.body} "
         false
       end

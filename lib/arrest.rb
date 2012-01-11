@@ -6,6 +6,7 @@ require 'arrest/helper/logger'
 require "arrest/attributes/belongs_to"
 require "arrest/attributes/has_attributes"
 require "arrest/attributes/converter"
+require "arrest/handler"
 require "arrest/source"
 require "arrest/helper/filter"
 require "arrest/helper/child_collection"
