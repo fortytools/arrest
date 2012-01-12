@@ -113,7 +113,6 @@ module Arrest
       conn = Faraday.new(:url => @base) do |builder|
         builder.request  :url_encoded
         builder.request  :json
-        builder.response :logger
         builder.adapter  :net_http
         builder.use Faraday::Response::Logger, Arrest::logger
       end
