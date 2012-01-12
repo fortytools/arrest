@@ -1,6 +1,8 @@
 require 'faraday'
+require 'arrest/handler'
 
 module Arrest
+
   class HttpSource
 
     def initialize base
@@ -22,6 +24,9 @@ module Arrest
         req.url sub, filter
         add_headers req.headers
       end
+      rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil)
+      rsl = ResponseLog.new(response.env[:status], response.body)
+      Arrest::Source.call_logger.log(rql, rsl)
       if response.env[:status] != 200
         raise Errors::DocumentNotFoundError 
       end
@@ -33,6 +38,9 @@ module Arrest
         req.url sub, filter
         add_headers req.headers
       end
+      rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil)
+      rsl = ResponseLog.new(response.env[:status], response.body)
+      Arrest::Source.call_logger.log(rql, rsl)
       response.body
     end
 
@@ -42,6 +50,9 @@ module Arrest
         req.url rest_resource.resource_location
         add_headers req.headers
       end
+      rql = RequestLog.new(:delete, rest_resource.resource_location, nil)
+      rsl = ResponseLog.new(response.env[:status], response.body)
+      Arrest::Source.call_logger.log(rql, rsl)
       response.env[:status] == 200
     end
 
@@ -50,11 +61,19 @@ module Arrest
       hash = rest_resource.to_jhash
       hash.delete(:id)
       hash.delete("id")
+      body = hash.to_json
 
       response = self.connection().put do |req|
         req.url rest_resource.resource_location
         add_headers req.headers
-        req.body = hash.to_json
+        req.body = body
+      end
+      rql = RequestLog.new(:put, rest_resource.resource_location, body)
+      rsl = ResponseLog.new(response.env[:status], response.body)
+      Arrest::Source.call_logger.log(rql, rsl)
+      if response.env[:status] != 200
+        err = Arrest::Source.error_handler.convert(response.body, response.env[:status])
+        rest_resource.errors.add(:base, err)
       end
       response.env[:status] == 200
     end
@@ -74,17 +93,17 @@ module Arrest
         add_headers req.headers
         req.body = body
       end
+      rql = RequestLog.new(:post, rest_resource.resource_path, body)
+      rsl = ResponseLog.new(response.env[:status], response.body)
+      Arrest::Source.call_logger.log(rql, rsl)
       if (response.env[:status] == 201)
         location = response.env[:response_headers][:location]
         id = location.gsub(/^.*\//, '')
         rest_resource.id= id
         true
       else
-        if response.env[:status] != 201
-          err = Arrest::Source.error_handler.convert(response.body, response.env[:status])
-          rest_resource.errors.add(:base, err)
-        end
-        puts "unable to create: #{response.env[:response_headers]} body: #{response.body} "
+        err = Arrest::Source.error_handler.convert(response.body, response.env[:status])
+        rest_resource.errors.add(:base, err)
         false
       end
       
@@ -98,6 +117,20 @@ module Arrest
         builder.adapter  :net_http
         builder.use Faraday::Response::Logger, Arrest::logger
       end
+    end
+
+    def hash_to_query hash
+      return "" if hash.empty?
+      r = ""
+      c = '?'
+      hash.each_pair do |k,v|
+        r << c
+        r << k.to_s
+        r << '='
+        r << v.to_s
+        c = '&'
+      end
+      r
     end
 
   end

@@ -15,6 +15,7 @@ module Arrest
       attr_accessor :json_key_converter
       attr_accessor :skip_validations
       attr_accessor :error_handler
+      attr_accessor :call_logger
 
       def source=(host=nil)
         if [nil, ""].include?(host)
@@ -54,6 +55,7 @@ module Arrest
   Source.debug = false
   Source.json_key_converter = Handlers::KeyConverter
   Source.error_handler = Handlers::ErrorHandler
+  Source.call_logger = Handlers::CallLogger
   Source.skip_validations = false
 
 end

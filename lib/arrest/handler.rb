@@ -1,5 +1,9 @@
 module Arrest
 
+  RequestLog = Struct.new(:method, :url, :body)
+  ResponseLog = Struct.new(:status, :body)
+  CallLog = Struct.new(:request, :response)
+
   # The classes in this module supply default behaviour
   # for certain processing steps in the consumttion ot the 
   # rest api
@@ -36,6 +40,11 @@ module Arrest
       # to a meaningful error message
       def self.convert body, statuscode
         body
+      end
+    end
+
+    class CallLogger
+      def self.log(requestLog, responseLog)
       end
     end
 
