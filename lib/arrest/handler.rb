@@ -1,3 +1,5 @@
+require 'arrest/string_utils'
+
 module Arrest
 
   RequestLog = Struct.new(:method, :url, :body)

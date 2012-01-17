@@ -101,3 +101,17 @@ class ChildFilter < Arrest::RestChild
 
   filter(:child_nnn) {|s| bfield == s}
 end
+
+class CommentableA < Arrest::RootResource
+end
+class CommentableB < Arrest::RootResource
+end
+class CommentableC < Arrest::RootResource
+end
+class Comment < Arrest::RootResource
+  belongs_to :commentable, :polymorphic => { :coma => "CommentableA",
+                                             :comb => "CommentableB" }
+end
+class ExtendedComment < Comment
+  belongs_to :other_commentable, :polymorphic => { :comc => :CommentableC }
+end

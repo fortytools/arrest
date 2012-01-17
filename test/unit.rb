@@ -397,7 +397,39 @@ class FirstTest < Test::Unit::TestCase
     expected = now.strftime "%FT%T%z"
     t = TimeClass.new(:time => now)
     assert_equal expected, t.to_jhash[:time], "This is the expected default format"
-
+  end
+  
+  def test_polymorphic_belongs_to
+    coma = CommentableA.new()
+    coma.save
+    comb = CommentableB.new()
+    comb.save
+    
+    c = Comment.new(:commentable_id => { :id => coma.id, :type => "coma"})
+    result = c.commentable
+    assert_equal result.class, CommentableA
+    
+    c2 = Comment.new(:commentable_id => { :id => comb.id, :type => "comb"})
+    result2 = c2.commentable
+    assert_equal result2.class, CommentableB
+  end
+  
+  def test_polymorphic_belongs_to_extended
+    coma = CommentableA.new()
+    coma.save
+    comc = CommentableC.new()
+    comc.save
+    
+    c = ExtendedComment.new({ :other_commentable_id => { :id => comc.id, :type => "comc"}, 
+                              :commentable_id => { :id => coma.id, :type => "coma" }})
+    assert_equal c.commentable.class, CommentableA
+    assert_equal c.other_commentable.class, CommentableC
+    
+    c.save
+    c_reloaded = ExtendedComment.find(c.id)
+    assert_equal c_reloaded.commentable.class, CommentableA
+    assert_equal c_reloaded.other_commentable.class, CommentableC
+    
   end
 end
 

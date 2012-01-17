@@ -14,21 +14,34 @@ module Arrest
         params = args[1] unless args.length < 2
         field_name = "#{name}_id"
         if params
-          field_name = params[:field_name] unless params[:field_name] == nil
-          class_name = params[:class_name].to_s unless params[:class_name] == nil
           read_only =  params[:read_only] == true
+          field_name = params[:field_name] unless params[:field_name] == nil
+          polymorphic = params[:polymorphic] unless params[:polymorphic] == nil
+          class_name = params[:class_name].to_s unless params[:class_name] == nil
         end
-        add_attribute(Attribute.new(field_name.to_sym, read_only, String))
+        
+        if polymorphic
+          add_attribute(PolymorphicAttribute.new(field_name.to_sym, read_only))
+        else
+          add_attribute(Attribute.new(field_name.to_sym, read_only, String))
+        end
+        
         send :define_method, name do
           val = self.send(field_name)
           if val == nil || val == ""
             return nil
-          end
+          end 
+          
           begin
-            Arrest::Source.mod.const_get(class_name).find(val)
+            if polymorphic
+              Arrest::Source.mod.const_get(polymorphic[val.type.to_sym]).find(val.id)
+            else
+              Arrest::Source.mod.const_get(class_name).find(val)
+            end
           rescue Errors::DocumentNotFoundError => e
             raise Errors::DocumentNotFoundError, "Couldnt find a #{class_name} with id #{val}"
           end
+          
         end
       end
     end

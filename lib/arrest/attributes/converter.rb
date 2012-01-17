@@ -4,52 +4,6 @@ end
 
 module Arrest
 
-  class Attribute
-    attr_accessor :name, :read_only, :clazz, :json_name
-    def initialize name, read_only, clazz
-      @name = name.to_sym
-      @read_only = read_only
-      @clazz = clazz
-      @json_name = Source.json_key_converter.key_to_json(name).to_sym
-    end
-
-    def from_hash value
-      return if value == nil
-      converter = CONVERTER[@clazz]
-      if converter == nil
-        puts "No converter for: #{@clazz.name}"
-        converter = IdentConv
-      end
-      converter.convert value
-    end
-
-    def to_hash value
-      return nil unless value != nil
-      converter = CONVERTER[@clazz]
-      if converter == nil
-        puts "No converter for: #{@clazz.name}"
-        converter = IdentConv
-      end
-      converter.mk_json value
-    end
-  end
-
-  class NestedAttribute < Attribute
-    def initialize name, read_only, clazz
-      super name, read_only, clazz
-    end
-
-    def from_hash value
-      return nil unless value != nil
-      @clazz.new value
-    end
-
-    def to_hash val
-      return nil unless val!= nil
-      val.to_hash
-    end
-  end
-
   class NestedCollection < Attribute
     def initialize name, read_only, clazz
       super name, read_only, clazz
@@ -121,6 +75,7 @@ module Arrest
   class ArrayConv < IdentConv
     target Array
   end
+
 
   class TimeConv < Converter
     target Time
