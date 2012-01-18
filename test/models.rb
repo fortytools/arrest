@@ -117,3 +117,6 @@ class ExtendedComment < Comment
              :field_name => "special_commentable_ref", 
              :polymorphic => { :comc => :CommentableC }
 end
+
+class DeleteMeAll < Arrest::RootResource
+end

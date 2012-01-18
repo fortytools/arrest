@@ -44,6 +44,19 @@ module Arrest
       response.body
     end
 
+    
+    def delete_all resource_path
+        response = self.connection().delete do |req|
+        req.url(resource_path)
+        add_headers(req.headers)
+      end
+      rql = RequestLog.new(:delete, "#{resource_path}", nil)
+      rsl = ResponseLog.new(response.env[:status], response.body)
+      Arrest::Source.call_logger.log(rql, rsl)
+      
+      response.env[:status] == 200
+    end
+
     def delete rest_resource
       raise "To delete an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       response = self.connection().delete do |req|

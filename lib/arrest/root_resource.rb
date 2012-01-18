@@ -112,6 +112,11 @@ module Arrest
         end
         n
       end
+      
+      
+      def delete_all
+        source().delete_all(self.resource_path)
+      end
     end
 
     def resource_path

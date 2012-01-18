@@ -116,7 +116,6 @@ module Arrest
           add_attribute Attribute.new(name, true, clazz)
         end
       end
-
     end
 
     include BelongsTo

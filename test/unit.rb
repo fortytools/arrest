@@ -432,7 +432,24 @@ class FirstTest < Test::Unit::TestCase
     assert_equal comc.id, c_reloaded.special_commentable_ref.id
     assert_equal CommentableC, c_reloaded.other_commentable.class
     assert_equal CommentableA, c_reloaded.commentable.class
+  end
+  
+  def test_delete_all_root_resources
+    d1 = DeleteMeAll.new()
+    d1.save
+    d2 = DeleteMeAll.new()
+    d2.save
     
+    d1_rel = DeleteMeAll.find(d1.id)
+    assert_not_nil d1_rel
+    d2_rel = DeleteMeAll.find(d2.id)
+    assert_not_nil d2_rel
+    all = DeleteMeAll.all
+    assert_equal 2, all.length
+    
+    DeleteMeAll.delete_all
+    all = DeleteMeAll.all
+    assert_equal [], all
   end
 end
 

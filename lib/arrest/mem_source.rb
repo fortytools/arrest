@@ -88,6 +88,16 @@ module Arrest
       wrap val.to_jhash.to_json, 1
     end
     
+    def delete_all resource_path
+      id_list = Array.new(@@collections[resource_path] || [])
+      id_list.each do |base_id|
+        @@collections.each_pair do |k,v|
+          v.reject!{ |id| id == base_id }
+        end
+        @@all_objects[base_id].delete
+      end
+    end
+    
     def collection_json values
       single_jsons = values.map do |v|
         v.to_jhash.to_json
