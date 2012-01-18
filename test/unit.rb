@@ -405,12 +405,14 @@ class FirstTest < Test::Unit::TestCase
     comb = CommentableB.new()
     comb.save
     
-    c = Comment.new(:commentable_id => { :id => coma.id, :type => "coma"})
+    c = Comment.new(:commentable_ref => { :id => coma.id, :type => "coma"})
     result = c.commentable
+    assert_equal coma.id, c.commentable_ref.id
     assert_equal result.class, CommentableA
     
-    c2 = Comment.new(:commentable_id => { :id => comb.id, :type => "comb"})
+    c2 = Comment.new(:commentable_ref => { :id => comb.id, :type => "comb"})
     result2 = c2.commentable
+    assert_equal comb.id, c2.commentable_ref.id
     assert_equal result2.class, CommentableB
   end
   
@@ -420,15 +422,16 @@ class FirstTest < Test::Unit::TestCase
     comc = CommentableC.new()
     comc.save
     
-    c = ExtendedComment.new({ :other_commentable_id => { :id => comc.id, :type => "comc"}, 
-                              :commentable_id => { :id => coma.id, :type => "coma" }})
+    c = ExtendedComment.new({ :special_commentable_ref => { :id => comc.id, :type => "comc"}, 
+                              :commentable_ref => { :id => coma.id, :type => "coma" }})
     assert_equal c.commentable.class, CommentableA
     assert_equal c.other_commentable.class, CommentableC
     
     c.save
     c_reloaded = ExtendedComment.find(c.id)
-    assert_equal c_reloaded.commentable.class, CommentableA
-    assert_equal c_reloaded.other_commentable.class, CommentableC
+    assert_equal comc.id, c_reloaded.special_commentable_ref.id
+    assert_equal CommentableC, c_reloaded.other_commentable.class
+    assert_equal CommentableA, c_reloaded.commentable.class
     
   end
 end

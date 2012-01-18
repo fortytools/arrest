@@ -7,24 +7,38 @@ module Arrest
     end
 
     module BelongsToMethods
-      def belongs_to(*args)
-        arg = args[0]
-        name = arg.to_s.downcase
-        class_name = StringUtils.classify name
-        params = args[1] unless args.length < 2
-        field_name = "#{name}_id"
-        if params
-          read_only =  params[:read_only] == true
-          field_name = params[:field_name] unless params[:field_name] == nil
-          polymorphic = params[:polymorphic] unless params[:polymorphic] == nil
-          class_name = params[:class_name].to_s unless params[:class_name] == nil
+      def create_field_name(name, params, polymorphic)
+        if (params && params[:field_name])
+          params[:field_name]
+        elsif polymorphic
+          "#{name}_ref"
+        else
+          "#{name}_id"
         end
-        
+      end
+      
+      def create_and_add_attribute(field_name, polymorphic, read_only)
         if polymorphic
           add_attribute(PolymorphicAttribute.new(field_name.to_sym, read_only))
         else
           add_attribute(Attribute.new(field_name.to_sym, read_only, String))
         end
+      end
+      
+      def belongs_to(*args)
+        arg = args[0]
+        name = arg.to_s.downcase
+        class_name = StringUtils.classify name
+        params = args[1] unless args.length < 2
+        if params
+          read_only =  params[:read_only] == true
+          polymorphic = params[:polymorphic] unless params[:polymorphic] == nil
+          class_name = params[:class_name].to_s unless params[:class_name] == nil
+        end
+
+        field_name = create_field_name(name, params, polymorphic)
+
+        create_and_add_attribute(field_name, polymorphic, read_only)
         
         send :define_method, name do
           val = self.send(field_name)

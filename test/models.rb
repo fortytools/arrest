@@ -113,5 +113,7 @@ class Comment < Arrest::RootResource
                                              :comb => "CommentableB" }
 end
 class ExtendedComment < Comment
-  belongs_to :other_commentable, :polymorphic => { :comc => :CommentableC }
+  belongs_to :other_commentable, 
+             :field_name => "special_commentable_ref", 
+             :polymorphic => { :comc => :CommentableC }
 end
