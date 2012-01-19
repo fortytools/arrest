@@ -451,5 +451,31 @@ class FirstTest < Test::Unit::TestCase
     all = DeleteMeAll.all
     assert_equal [], all
   end
+  
+  def test_has_many_matrix_in_mem_source
+    f1 = FooWithManyBars.new()
+    f1.save
+    f2 = FooWithManyBars.new()
+    f2.save
+    f3 = FooWithManyBars.new()
+    f3.save
+    
+
+    b1 = BarWithManyFoos.new({:foo_ids => [f1.id, f2.id]})
+    b1.save
+    b2 = BarWithManyFoos.new({:foo_ids => [f2.id, f3.id]})
+    b2.save
+    
+    f1.delete
+    
+    b1_rel = BarWithManyFoos.find(b1.id)
+    #assert_equal [f2.id], b1_rel.foo_ids
+    
+    #f2.delete
+    #b1_rel = BarWithManyFoos.find(b1.id)
+    #assert_equal [], b1_rel.foo_ids
+    #b2_rel = BarWithManyFoos.find(b2.id)
+    #assert_equal [f3.id], b2_rel.foo_ids
+  end
 end
 

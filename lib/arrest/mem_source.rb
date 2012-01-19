@@ -8,7 +8,8 @@ module Arrest
                        # each having a unique id
 
     @@collections = {} # maps urls to collections of ids of objects
-
+    
+    @@has_many_relations = {}
     
     @@data = {}
 
@@ -118,26 +119,62 @@ module Arrest
     end
 
 
-    def delete rest_resource
+    def delete(rest_resource)
       raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       @@all_objects.delete(rest_resource.id)
       @@collections.each_pair do |k,v|
         v.reject!{ |id| id == rest_resource.id }
       end
+      remove_edges(@@has_many_relations, rest_resource.id)
       rest_resource
     end
 
-    def put rest_resource
+    def remove_edges(matrix_sets, node_id)
+      if (matrix_sets[node_id])
+        matrix_sets[node_id].each do |to_edges|
+          puts "EDGES #{to_edges}"
+          to_edges.delete(node_id)
+        end
+        matrix_sets.delete(node_id)
+      end
+    end
+
+    def store_edge(matrix_sets, from, to)
+      if matrix_sets[from] == nil
+        matrix_sets[from] = [].to_set
+      end
+      matrix_sets[from].add(to)
+      matrix_sets
+    end
+
+    def identify_and_store_edges(matrix_sets, rest_resource)
+      from = rest_resource.id
+      
+      rest_resource.class.all_fields.find_all{|field| field.is_a?(Arrest::HasManyAttribute)}.each do |attr|
+        to = rest_resource.send(attr.name)
+        if (to != nil) 
+          store_edge(matrix_sets, from, to)
+          store_edge(matrix_sets, to, from)
+        end
+      end
+    end
+
+    def put(rest_resource)
+
       raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       old = @@all_objects[rest_resource.id]
 
       rest_resource.class.all_fields.each do |f|
         old.send("#{f.name}=", rest_resource.send(f.name))
       end
+
+      identify_and_store_edges(@@has_many_relations, rest_resource)
+
       true
     end
 
-    def post rest_resource
+    def post(rest_resource)
+      
       Arrest::debug "post -> #{rest_resource.class.name} #{rest_resource.to_hash} #{rest_resource.class.all_fields.map(&:name)}"
       raise "new object must have setter for id" unless rest_resource.respond_to?(:id=)
       raise "new object must not have id" if rest_resource.respond_to?(:id) && rest_resource.id != nil
@@ -152,6 +189,9 @@ module Arrest
         @@collections[rest_resource.resource_path] = []
       end
       @@collections[rest_resource.resource_path] << rest_resource.id
+
+      identify_and_store_edges(@@has_many_relations, rest_resource)
+
       true
     end
 

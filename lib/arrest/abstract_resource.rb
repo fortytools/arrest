@@ -50,7 +50,7 @@ module Arrest
 
       def has_many(*args)
         method_name, options = args
-        singular = (StringUtils.singular(method_name.to_s) + '_ids').to_sym
+        ids_field_name = (StringUtils.singular(method_name.to_s) + '_ids').to_sym
         method_name = method_name.to_sym
 
         clazz_name = method_name.to_s
@@ -60,7 +60,9 @@ module Arrest
             clazz_name = clazz.to_s
           end
         end
-        attribute singular, Array
+        
+        add_attribute(HasManyAttribute.new(ids_field_name))
+        
         send :define_method, method_name do
           if @has_many_collections == nil
             @has_many_collections = {}
@@ -144,7 +146,7 @@ module Arrest
       true
     end
     #
-    # convenicence method printing curl command
+    # convenience method printing curl command
     def curl
       hs = ""
       Arrest::Source.header_decorator.headers.each_pair do |k,v| 

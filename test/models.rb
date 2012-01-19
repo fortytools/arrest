@@ -120,3 +120,10 @@ end
 
 class DeleteMeAll < Arrest::RootResource
 end
+
+class FooWithManyBars < Arrest::RootResource
+  has_many :bars, :class_name => :BarWithManyFoos 
+end
+class BarWithManyFoos < Arrest::RootResource
+  has_many :foos, :class_name => :FooWithManyBars 
+end
