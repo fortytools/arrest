@@ -1,4 +1,7 @@
 module Arrest
+  
+  HasManyEdge = Struct.new(:name, :id, :tail)
+  
   class MemSource
 
     attr_accessor :data
@@ -9,7 +12,7 @@ module Arrest
 
     @@collections = {} # maps urls to collections of ids of objects
     
-    @@has_many_relations = {}
+    @@edge_matrix = {} # matrix of edges based on node ids for has_many and belongs_to relations
     
     @@data = {}
 
@@ -62,17 +65,38 @@ module Arrest
       end
     end
 
-    def get_many sub, filters = {}
+    def parse_for_has_many_relations(resource_path)
+      matcher = /^.+\/([^\/]+)\/([^\/]+)$/.match(resource_path)
+      return [] unless matcher
+      object_id = matcher[1]
+      relation = matcher[2]
+
+      if (object_id && relation && @@edge_matrix[object_id])
+        result = []
+        @@edge_matrix[object_id].each do |edge|
+          if (edge.name.to_s == relation)
+            result << edge.id
+          end
+        end
+        return result
+      end
+      []
+    end
+
+    def get_many(sub, filters = {})
       Arrest::debug sub + (hash_to_query filters)
       # filters are ignored by mem impl so far
+      
+      id_list = parse_for_has_many_relations(sub)
+      if id_list.empty?
+        id_list = @@collections[sub] || []
+      end
 
-      id_list = @@collections[sub] || []
       objects = id_list.map do |id|
         @@all_objects[id]
       end
 
       wrap collection_json(objects), id_list.length
-
     end
 
     def get_one sub, filters = {}
@@ -96,6 +120,7 @@ module Arrest
           v.reject!{ |id| id == base_id }
         end
         @@all_objects[base_id].delete
+        remove_edges(@@edge_matrix, base_id)
       end
     end
     
@@ -125,42 +150,39 @@ module Arrest
       @@collections.each_pair do |k,v|
         v.reject!{ |id| id == rest_resource.id }
       end
-      remove_edges(@@has_many_relations, rest_resource.id)
+      remove_edges(@@edge_matrix, rest_resource.id)
       rest_resource
     end
 
-    def remove_edges(matrix_sets, node_id)
-      if (matrix_sets[node_id])
-        matrix_sets[node_id].each do |to_edges|
-          puts "EDGES #{to_edges}"
-          to_edges.delete(node_id)
+    def remove_edges(edge_matrix, node_id)
+      if (edge_matrix[node_id])
+        edge_matrix[node_id].each do |edge|
+          to_nodes = edge_matrix[edge.id]
+          to_nodes.delete_if{|e| e.id == node_id}
         end
-        matrix_sets.delete(node_id)
+        edge_matrix.delete(node_id)
       end
     end
 
-    def store_edge(matrix_sets, from, to)
-      if matrix_sets[from] == nil
-        matrix_sets[from] = [].to_set
-      end
-      matrix_sets[from].add(to)
-      matrix_sets
-    end
-
-    def identify_and_store_edges(matrix_sets, rest_resource)
-      from = rest_resource.id
+    def identify_and_store_edges(edge_matrix, rest_resource)
+      from_id = rest_resource.id
       
       rest_resource.class.all_fields.find_all{|field| field.is_a?(Arrest::HasManyAttribute)}.each do |attr|
-        to = rest_resource.send(attr.name)
-        if (to != nil) 
-          store_edge(matrix_sets, from, to)
-          store_edge(matrix_sets, to, from)
+        to_ids = rest_resource.send(attr.name) # -> foo_ids
+        url_part = attr.url_part
+        edge_matrix[from_id] ||= Set.new()
+        if to_ids
+          to_ids.each do |to_id|
+            edge_matrix[from_id].add(HasManyEdge.new(url_part, to_id, true))
+            edge_matrix[to_id] ||= Set.new()
+            edge_matrix[to_id].add(HasManyEdge.new(url_part, from_id, false))
+          end
         end
       end
     end
 
-    def put(rest_resource)
 
+    def put(rest_resource)
       raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       old = @@all_objects[rest_resource.id]
 
@@ -168,10 +190,11 @@ module Arrest
         old.send("#{f.name}=", rest_resource.send(f.name))
       end
 
-      identify_and_store_edges(@@has_many_relations, rest_resource)
+      identify_and_store_edges(@@edge_matrix, rest_resource)
 
       true
     end
+
 
     def post(rest_resource)
       
@@ -190,12 +213,12 @@ module Arrest
       end
       @@collections[rest_resource.resource_path] << rest_resource.id
 
-      identify_and_store_edges(@@has_many_relations, rest_resource)
+      identify_and_store_edges(@@edge_matrix, rest_resource)
 
       true
     end
 
-    def cheat_collection url, ids
+    def cheat_collection(url, ids)
         @@collections[url] = ids
     end
 

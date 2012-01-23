@@ -459,23 +459,33 @@ class FirstTest < Test::Unit::TestCase
     f2.save
     f3 = FooWithManyBars.new()
     f3.save
-    
 
     b1 = BarWithManyFoos.new({:foo_ids => [f1.id, f2.id]})
     b1.save
+    
+    assert_equal 2, b1.foos.length
+    
     b2 = BarWithManyFoos.new({:foo_ids => [f2.id, f3.id]})
     b2.save
     
     f1.delete
     
     b1_rel = BarWithManyFoos.find(b1.id)
-    #assert_equal [f2.id], b1_rel.foo_ids
+    assert_equal 1, b1_rel.foos.length
+    assert_equal f2.id, b1_rel.foos.first.id
     
-    #f2.delete
-    #b1_rel = BarWithManyFoos.find(b1.id)
-    #assert_equal [], b1_rel.foo_ids
-    #b2_rel = BarWithManyFoos.find(b2.id)
-    #assert_equal [f3.id], b2_rel.foo_ids
+    
+    f2.bar_ids=[b1.id, b2.id]
+    f2.save
+    f2_rel = FooWithManyBars.find(f2.id)
+    assert_equal 2, f2_rel.bars.length
+    
+    b2.delete
+    
+    f2_rel = FooWithManyBars.find(f2.id)
+    assert_equal 1, f2_rel.bars.length
+    assert_equal b1.id, f2_rel.bars.first.id
+    
   end
 end
 

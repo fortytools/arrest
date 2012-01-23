@@ -53,7 +53,7 @@ module Arrest
         ids_field_name = (StringUtils.singular(method_name.to_s) + '_ids').to_sym
         method_name = method_name.to_sym
 
-        clazz_name = method_name.to_s
+        clazz_name = StringUtils.singular(method_name.to_s)
         if options
           clazz = options[:class_name]
           if clazz
@@ -61,14 +61,20 @@ module Arrest
           end
         end
         
-        add_attribute(HasManyAttribute.new(ids_field_name))
+        url_part = method_name.to_s
+        
+        hm_attr = HasManyAttribute.new(ids_field_name, 
+                                       method_name, 
+                                       clazz_name,
+                                       url_part)
+        add_attribute(hm_attr)
         
         send :define_method, method_name do
           if @has_many_collections == nil
             @has_many_collections = {}
           end
           if @has_many_collections[method_name] == nil
-            @has_many_collections[method_name] = HasManyCollection.new(self, (StringUtils.classify (StringUtils.singular clazz_name)))
+            @has_many_collections[method_name] = HasManyCollection.new(self, hm_attr)
           end
 
           @has_many_collections[method_name]

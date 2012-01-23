@@ -9,7 +9,7 @@ module Arrest
 
       def by_url url
         begin
-          body = body_root(source().get_many url)
+          body = body_root(source().get_many(url))
         rescue Arrest::Errors::DocumentNotFoundError
           Arrest::logger.info "DocumentNotFoundError for #{url} gracefully returning []"
           return []

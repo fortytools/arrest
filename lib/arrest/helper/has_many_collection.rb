@@ -1,8 +1,9 @@
 module Arrest
   class HasManyCollection #< BasicObject
-    def initialize parent, clazz_name
+    def initialize parent, has_many_attribute
       @parent = parent
-      @clazz_name = clazz_name
+      @clazz_name = (StringUtils.classify(has_many_attribute.clazz_name.to_s))
+      @url_part = has_many_attribute.url_part
       @children = nil
       @foreign_key_name = (StringUtils.underscore(@parent.class.name).gsub(/^.*\//, '') + '_id').to_sym
       define_filters
@@ -23,10 +24,9 @@ module Arrest
 
     private
 
-
     def children
       if @children == nil
-        url = @parent.resource_location + '/' + resolved_class.resource_name.to_s
+        url = @parent.resource_location + '/' + @url_part.to_s
         @children = resolved_class.by_url(url)
       end
       @children
