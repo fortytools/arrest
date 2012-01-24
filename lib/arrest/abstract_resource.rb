@@ -52,21 +52,21 @@ module Arrest
         method_name, options = args
         ids_field_name = (StringUtils.singular(method_name.to_s) + '_ids').to_sym
         method_name = method_name.to_sym
-
         clazz_name = StringUtils.singular(method_name.to_s)
+        foreign_key = clazz_name + "_id"
         if options
-          clazz = options[:class_name]
-          if clazz
-            clazz_name = clazz.to_s
-          end
+          clazz_name = options[:class_name].to_s unless options[:class_name] == nil
+          foreign_key = "#{StringUtils.underscore(clazz_name)}_id"
+          foreign_key = options[:foreign_key].to_s unless options[:foreign_key] == nil
         end
-        
+
         url_part = method_name.to_s
         
         hm_attr = HasManyAttribute.new(ids_field_name, 
                                        method_name, 
                                        clazz_name,
-                                       url_part)
+                                       url_part,
+                                       foreign_key)
         add_attribute(hm_attr)
         
         send :define_method, method_name do

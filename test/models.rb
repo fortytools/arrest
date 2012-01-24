@@ -121,9 +121,12 @@ end
 class DeleteMeAll < Arrest::RootResource
 end
 
-class FooWithManyBars < Arrest::RootResource
-  has_many :bars, :class_name => :BarWithManyFoos
+class Foo < Arrest::RootResource
+  has_many :bars#, :class_name => :Bar, :foreign_key => defaults to bar_id 
+  has_many :other_bars, :class_name => :Bar, :foreign_key => :common_key
 end
-class BarWithManyFoos < Arrest::RootResource
-  has_many :foos, :class_name => :FooWithManyBars
+class Bar < Arrest::RootResource
+  has_many :foos
+  belongs_to :foo# foreign key defaults to class name, {:foreign_key => bar_id}
+  belongs_to :other_foo, {:class_name => Foo, :foreign_key => :common_key}#, :foreign_key => :other_foo_key
 end

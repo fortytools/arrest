@@ -451,41 +451,103 @@ class FirstTest < Test::Unit::TestCase
     all = DeleteMeAll.all
     assert_equal [], all
   end
+
+  def test_update_belongs_to
+    f1 = Foo.new()
+    f1.save
+    assert_equal 0, Arrest::Source.source.edge_count
+    b1 = Bar.new({:foo_id => f1.id})
+    b1.save
+    assert_equal 2, Arrest::Source.source.edge_count
+    assert_equal 2, Arrest::Source.source.node_count
+    
+    f2 = Foo.new()
+    f2.save
+    assert_equal 2, Arrest::Source.source.edge_count
+    b1.foo_id = f2.id
+    b1.save
+    #Arrest::Source.source.edge_matrix.each_pair{|k,v| y k; y v}
+    assert_equal 2, Arrest::Source.source.edge_count
+    assert_equal 3, Arrest::Source.source.node_count
+  end
   
   def test_has_many_matrix_in_mem_source
-    f1 = FooWithManyBars.new()
+    f1 = Foo.new()
     f1.save
-    f2 = FooWithManyBars.new()
+    f2 = Foo.new()
     f2.save
-    f3 = FooWithManyBars.new()
+    f3 = Foo.new()
     f3.save
 
-    b1 = BarWithManyFoos.new({:foo_ids => [f1.id, f2.id]})
+    b1 = Bar.new({:foo_ids => [f1.id, f2.id], :foo_id => f3.id})
     b1.save
     
     assert_equal 2, b1.foos.length
     
-    b2 = BarWithManyFoos.new({:foo_ids => [f2.id, f3.id]})
+    b2 = Bar.new({:foo_ids => [f2.id, f3.id], :foo_id =>f1.id})
     b2.save
     
     f1.delete
     
-    b1_rel = BarWithManyFoos.find(b1.id)
+    b1_rel = Bar.find(b1.id)
     assert_equal 1, b1_rel.foos.length
     assert_equal f2.id, b1_rel.foos.first.id
     
     
-    f2.bar_ids=[b1.id, b2.id]
+    f2.bar_ids=[b1.id]
+    f2.other_bar_ids=[b2.id]
     f2.save
-    f2_rel = FooWithManyBars.find(f2.id)
-    assert_equal 2, f2_rel.bars.length
+    f2_rel = Foo.find(f2.id)
+    assert_equal 1, f2_rel.bars.length
+    assert_equal 1, f2_rel.other_bars.length
     
     b2.delete
     
-    f2_rel = FooWithManyBars.find(f2.id)
+    f2_rel = Foo.find(f2.id)
     assert_equal 1, f2_rel.bars.length
+    assert_equal 0, f2_rel.other_bars.length
     assert_equal b1.id, f2_rel.bars.first.id
     
+  end
+
+  def test_has_many_with_belongs_to
+    f1 = Foo.new()
+    f1.save
+    f2 = Foo.new()
+    f2.save
+    f3 = Foo.new()
+    f3.save
+
+    b1 = Bar.new({:other_foo_id => f1.id, :foo_id => f3.id})
+    b1.save
+    b2 = Bar.new({:other_foo_id => f2.id, :foo_id => f1.id})
+    b2.save
+    
+    f1_rel = Foo.find(f1.id)
+    f2_rel = Foo.find(f2.id)
+    f3_rel = Foo.find(f3.id)
+    
+    assert_equal 1, f1_rel.bars.length
+    assert_equal b1.id, f1_rel.other_bars.first.id
+    assert_equal b1.id, f3_rel.bars.first.id
+
+    assert_equal b2.id, f1_rel.bars.first.id
+    assert_equal b2.id, f2_rel.other_bars.first.id
+    
+    #test update
+    b1.foo_id = f2.id
+    b1.save
+    
+    
+    
+    f3_rel = Foo.find(f3.id)
+    assert f3_rel.bars.empty?
+    f2_rel = Foo.find(f2.id)
+    assert_equal b1.id, f2_rel.bars.first.id
+
+    b1.delete
+    f1_rel = Foo.find(f1.id)
+    assert f1_rel.other_bars.empty?
   end
 end
 

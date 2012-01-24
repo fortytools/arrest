@@ -1,6 +1,6 @@
 module Arrest
   
-  HasManyEdge = Struct.new(:name, :id, :tail)
+  Edge = Struct.new(:foreign_key, :name, :id, :tail)
   
   class MemSource
 
@@ -12,6 +12,7 @@ module Arrest
 
     @@collections = {} # maps urls to collections of ids of objects
     
+    # For every has_many relation 
     @@edge_matrix = {} # matrix of edges based on node ids for has_many and belongs_to relations
     
     @@data = {}
@@ -28,12 +29,25 @@ module Arrest
       @@data
     end
 
+    def edge_matrix
+      @@edge_matrix
+    end
+    
+    def edge_count
+      @@edge_matrix.values.inject(0){|sum, edges| sum + edges.length }
+    end
+
+    def node_count
+      @@edge_matrix.length
+    end
+    
     def initialize
       @@all_objects = {} # holds all objects of all types,
 
       @@collections = {} # maps urls to collections of ids of objects
       @@random = Random.new(42)
 
+      @@edge_matrix = {}
     end
 
 
@@ -154,6 +168,26 @@ module Arrest
       rest_resource
     end
 
+    def remove_outgoing_edges(edge_matrix, id)
+      if (edge_matrix[id])
+        out_edges = edge_matrix[id].find_all{|edge| edge.tail}
+        in_edges_to_delete = out_edges.map do |out_edge|
+          foreign_edges = edge_matrix[out_edge.id] # the edge set of the foreign node that this node points to
+          has_many_back_edges = foreign_edges.find_all do |for_edge| 
+            for_edge.id == id && for_edge.foreign_key == out_edge.foreign_key
+          end
+          [has_many_back_edges.first, out_edge.id] # first element may be nil
+        end
+        
+        in_edges_to_delete.each do |tupel|
+          if tupel[0]
+            edge_matrix[tupel[1]].delete_if{|e| e.id == tupel[0].id && e.foreign_key == tupel[0].foreign_key}
+          end
+        end
+        edge_matrix[id] = Set.new()
+      end
+    end
+
     def remove_edges(edge_matrix, node_id)
       if (edge_matrix[node_id])
         edge_matrix[node_id].each do |edge|
@@ -167,15 +201,37 @@ module Arrest
     def identify_and_store_edges(edge_matrix, rest_resource)
       from_id = rest_resource.id
       
-      rest_resource.class.all_fields.find_all{|field| field.is_a?(Arrest::HasManyAttribute)}.each do |attr|
-        to_ids = rest_resource.send(attr.name) # -> foo_ids
-        url_part = attr.url_part
-        edge_matrix[from_id] ||= Set.new()
-        if to_ids
-          to_ids.each do |to_id|
-            edge_matrix[from_id].add(HasManyEdge.new(url_part, to_id, true))
+      rest_resource.class.all_fields.each do |attr|
+        if attr.is_a?(Arrest::HasManyAttribute)
+          to_ids = rest_resource.send(attr.name) # -> foo_ids
+          url_part = attr.url_part
+          foreign_key = attr.foreign_key
+          edge_matrix[from_id] ||= Set.new()
+          if to_ids
+            to_ids.each do |to_id|
+              edge_matrix[from_id].add(Edge.new(foreign_key, url_part, to_id, true))
+              edge_matrix[to_id] ||= Set.new()
+              edge_matrix[to_id].add(Edge.new(foreign_key, url_part, from_id, false))
+            end
+          end
+        elsif attr.is_a?(Arrest::BelongsToAttribute)
+          to_id = rest_resource.send(attr.name)
+          if to_id
+            foreign_key = attr.foreign_key
+            has_many_clazz = attr.target_class()
+            puts "#{foreign_key}"
+            hm_candidates = has_many_clazz.all_fields.find_all do |field|
+              puts "->#{field.foreign_key.to_s}" if field.is_a?(Arrest::HasManyAttribute) 
+              field.is_a?(Arrest::HasManyAttribute) && field.foreign_key.to_s == foreign_key
+            end
+            return if hm_candidates.empty?
+            has_many_node = hm_candidates.first
+            url_part = has_many_node.url_part
+  
+            edge_matrix[from_id] ||= Set.new()
+            edge_matrix[from_id].add(Edge.new(foreign_key, url_part, to_id, true))
             edge_matrix[to_id] ||= Set.new()
-            edge_matrix[to_id].add(HasManyEdge.new(url_part, from_id, false))
+            edge_matrix[to_id].add(Edge.new(foreign_key, url_part, from_id, false))
           end
         end
       end
@@ -185,7 +241,9 @@ module Arrest
     def put(rest_resource)
       raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       old = @@all_objects[rest_resource.id]
-
+      
+      remove_outgoing_edges(@@edge_matrix, old.id)
+      
       rest_resource.class.all_fields.each do |f|
         old.send("#{f.name}=", rest_resource.send(f.name))
       end
