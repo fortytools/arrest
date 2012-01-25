@@ -219,9 +219,7 @@ module Arrest
           if to_id
             foreign_key = attr.foreign_key
             has_many_clazz = attr.target_class()
-            puts "#{foreign_key}"
             hm_candidates = has_many_clazz.all_fields.find_all do |field|
-              puts "->#{field.foreign_key.to_s}" if field.is_a?(Arrest::HasManyAttribute) 
               field.is_a?(Arrest::HasManyAttribute) && field.foreign_key.to_s == foreign_key
             end
             return if hm_candidates.empty?
