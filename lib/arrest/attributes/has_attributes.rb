@@ -79,8 +79,9 @@ module Arrest
         @fields = []
       end
 
-      def attribute name, clazz
-        add_attribute Attribute.new(name, false, clazz)
+      def attribute name, clazz, attribs = {} 
+        read_only = !!attribs[:read_only]
+        add_attribute Attribute.new(name, read_only, clazz)
       end
 
       def attributes(args)
