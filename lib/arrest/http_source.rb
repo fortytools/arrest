@@ -28,7 +28,7 @@ module Arrest
       rsl = ResponseLog.new(response.env[:status], response.body)
       Arrest::Source.call_logger.log(rql, rsl)
       if response.env[:status] != 200
-        raise Errors::DocumentNotFoundError 
+        raise Errors::DocumentNotFoundError
       end
       response.body
     end
@@ -44,7 +44,7 @@ module Arrest
       response.body
     end
 
-    
+
     def delete_all resource_path
         response = self.connection().delete do |req|
         req.url(resource_path)
@@ -53,7 +53,7 @@ module Arrest
       rql = RequestLog.new(:delete, "#{resource_path}", nil)
       rsl = ResponseLog.new(response.env[:status], response.body)
       Arrest::Source.call_logger.log(rql, rsl)
-      
+
       response.env[:status] == 200
     end
 
@@ -85,8 +85,7 @@ module Arrest
       rsl = ResponseLog.new(response.env[:status], response.body)
       Arrest::Source.call_logger.log(rql, rsl)
       if response.env[:status] != 200
-        err = Arrest::Source.error_handler.convert(response.body, response.env[:status])
-        rest_resource.errors.add(:base, err)
+        handle_errors(rest_resource, response.body, response.env[:status])
       end
       response.env[:status] == 200
     end
@@ -99,7 +98,7 @@ module Arrest
       hash.delete('id')
 
       hash.delete_if{|k,v| v == nil}
-      
+
       body = hash.to_json
       response = self.connection().post do |req|
         req.url rest_resource.resource_path
@@ -115,11 +114,10 @@ module Arrest
         rest_resource.id= id
         true
       else
-        err = Arrest::Source.error_handler.convert(response.body, response.env[:status])
-        rest_resource.errors.add(:base, err)
+        handle_errors(rest_resource, response.body, response.env[:status])
         false
       end
-      
+
     end
 
     def connection
@@ -144,6 +142,17 @@ module Arrest
       end
       r
     end
+
+    private
+
+      def handle_errors rest_resource, body, status
+        err = Arrest::Source.error_handler.convert(body,status)
+        if err.is_a?(String)
+          rest_resource.errors.add(:base, err)
+        else # is_a?(Array)
+          err.map{|k,v| rest_resource.errors.add(k,v)}
+        end
+      end
 
   end
 end
