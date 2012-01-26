@@ -1,5 +1,6 @@
 .bundle
 .project
+.rvmrc
 *.gem
 *.swp
 coverage
