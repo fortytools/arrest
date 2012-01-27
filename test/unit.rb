@@ -549,5 +549,47 @@ class FirstTest < Test::Unit::TestCase
     f1_rel = Foo.find(f1.id)
     assert f1_rel.other_bars.empty?
   end
+
+  def test_equality_non_persistent
+    zoo1 = Zoo.new(:name => 'zoo1')
+    zoo2 = Zoo.new(:name => 'zoo2')
+    zoo1.id = '1'
+    zoo2.id = '1'
+
+    assert zoo1 == zoo2
+    assert_equal zoo1, zoo2
+    zoo2.id = '2'
+    assert zoo1 != zoo2
+    assert_not_equal zoo1, zoo2
+  end
+
+  def test_equality
+    zoo1 = Zoo.new(:name => 'zoo1')
+    zoo2 = Zoo.new(:name => 'zoo2')
+
+    assert zoo1.save, 'simple zoo should be saveable'
+    assert zoo2.save, 'simple zoo should be saveable'
+
+    assert_not_equal zoo1.id, zoo2.id, 'new zoos should have different ids'
+
+    assert_not_equal zoo1,zoo2, 'objects with different ids should not be equal'
+
+    assert_equal zoo1, zoo1, 'An object should be euqual to itself'
+    
+    assert_not_equal zoo1, nil, 'Anactual object should not equal nil'
+
+    zoo1_reloaded = Zoo.find(zoo1.id)
+    assert_not_nil zoo1_reloaded
+
+    assert zoo1 == zoo1_reloaded, "Objects of the same class with the same id should be equal"
+
+    foo = Foo.new()
+    foo.id = zoo1.id
+
+    assert_not_equal zoo1, foo, "Objects of different classes should not be euqal, even if they have the same id"
+    
+    zoo1_reloaded.name = 'zoooooo'
+    assert_equal zoo1, zoo1_reloaded, "Objects of the same class with the same id should be equal even if they differ in attributes (same as in rails)"
+  end
 end
 

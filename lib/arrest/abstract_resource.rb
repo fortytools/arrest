@@ -191,5 +191,11 @@ module Arrest
 
       "curl #{hs} -v '#{Arrest::Source.source.url}/#{self.resource_location}'"
     end
+
+    def == (comparison_object)
+      other_class_name = comparison_object.class.name if comparison_object
+      other_id = comparison_object.id if comparison_object
+      self.class.name == other_class_name && self.id == other_id
+    end
   end
 end
