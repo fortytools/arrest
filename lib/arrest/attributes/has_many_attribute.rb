@@ -1,12 +1,13 @@
 module Arrest
   class HasManyAttribute < Attribute
     attr_reader :method_name, :clazz_name, :url_part, :foreign_key
-    def initialize(ids_field_name, 
+    def initialize(ids_field_name,
                    method_name,
                    clazz_name,
                    url_part,
-                   foreign_key)
-      super(ids_field_name, false, Array)
+                   foreign_key,
+                   read_only = false)
+      super(ids_field_name, read_only, Array)
       @method_name = method_name.to_sym
       @clazz_name = clazz_name.to_sym
       @url_part = url_part.to_sym
