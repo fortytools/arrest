@@ -44,6 +44,20 @@ module Arrest
       end
     end
 
+    def update_attributes attribute_hash
+      fields = self.class.all_fields
+      field_names = fields.map(&:name)
+      attribute_hash.each_pair do |k,v|
+        matching_fields = fields.find_all{|f| f.name.to_s == k.to_s}
+        field = matching_fields.first
+        if field
+          converted = field.from_hash(v)
+          self.send("#{k}=", converted)
+        end
+      end
+      self.save
+    end
+
     def load_from_stub
       @load_blk.call
       @stubbed = false

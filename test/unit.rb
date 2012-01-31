@@ -605,5 +605,11 @@ class FirstTest < Test::Unit::TestCase
 
     b.foo_ids = []
   end
+
+  def test_update_attribute
+    zoo1 = Zoo.new(:name => 'zoo1')
+    zoo1.update_attributes({:name => "updated"})
+    assert_equal "updated", zoo1.name
+  end
 end
 
