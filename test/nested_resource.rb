@@ -18,7 +18,7 @@ class NestedResourcesTest < Test::Unit::TestCase
     input = {
       :parent_name => 'parent',
       :bool => false,
-      :nested_object => { 
+      :nested_object => {
         :name => 'iamnested',
         :underscore_name => 'foo',
         :bool => true
@@ -37,7 +37,7 @@ class NestedResourcesTest < Test::Unit::TestCase
     input = {
       :parent_name => 'parent',
       :bool => false,
-      :nested_object => { 
+      :nested_object => {
         :name => 'iamnested',
         :underscore_name => 'foo',
         :bool => true
@@ -55,13 +55,13 @@ class NestedResourcesTest < Test::Unit::TestCase
       :parent_name => 'parent',
       :bool => false,
       :nested_objects => [
-        { 
+        {
         :name => 'iamnested_one',
         :bool => true
-        },{ 
+        },{
         :name => 'iamnested_two',
         :bool => false
-        } 
+        }
       ]
     }
 
@@ -71,14 +71,14 @@ class NestedResourcesTest < Test::Unit::TestCase
 
   end
 
-  def test_belongd_to_to_hash
+  def test_belongs_to_to_hash
     new_zoo = Zoo.new({:name => "Foo"})
     new_zoo.save
 
     input = {
       :parent_name => 'parent',
       :bool => false,
-      :nested_object => { 
+      :nested_object => {
         :name => 'iamnested',
         :bool => true,
         :zoo_id => new_zoo.id
@@ -105,7 +105,7 @@ class NestedResourcesTest < Test::Unit::TestCase
     assert_not_nil c.id, "Persisted object should have id"
     assert_equal  "Foo", c.zoo_thing.name
     assert_equal  "Foo", c.zoo.name
-    
+
 
     assert_not_nil c.id, "Persisted zoo should have id"
     c_reloaded = CustomNamedBelongsTo.all.first

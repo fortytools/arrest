@@ -13,5 +13,10 @@ module Arrest
     def sub_resource_field_name
       @name
     end
+
+    def from_hash(value)
+      return [] if value == nil
+      super.from_hash(value)
+    end
   end
 end

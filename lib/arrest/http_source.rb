@@ -70,8 +70,7 @@ module Arrest
     end
 
     def put_sub_resource(rest_resource, sub_url, ids)
-      location = rest_resource.resource_location + "/#{sub_url}"
-      #body = {sub_url => ids}.to_json
+      location = "#{rest_resource.resource_location}/#{sub_url}"
       body = ids.to_json
 
       internal_put(rest_resource, location, body)

@@ -20,11 +20,11 @@ module Arrest
         Arrest::Source::source
       end
 
-      def body_root response
+      def body_root(response)
         if response == nil
           raise Errors::DocumentNotFoundError
         end
-        all = JSON.parse response
+        all = JSON.parse(response)
         body = all["result"]
         if body == nil
           raise Errors::DocumentNotFoundError
@@ -32,11 +32,18 @@ module Arrest
         body
       end
 
-      def build hash
-        self.new hash, true
+      def build(hash)
+        resource = self.new(hash, true)
+
+        # traverse fields for subresources and fill them in
+        self.all_fields.find_all{|f| f.is_a?(HasManySubResourceAttribute)}.each do |attr|
+          ids = AbstractResource::source.get_one("#{resource.resource_location}/#{attr.sub_resource_field_name}")
+          resource.send("#{attr.name}=", body_root(ids))
+        end
+        resource
       end
 
-      def custom_resource_name new_name
+      def custom_resource_name(new_name)
         @custom_resource_name = new_name
       end
 
@@ -64,7 +71,7 @@ module Arrest
 
         url_part = method_name.to_s
 
-        hm_attr = create_has_many_attribute(sub_resource,
+        hm_attr = create_has_many_attribute(sub_resource, # e.g. 'team_ids' attribute for 'has_many :teams'
                                             ids_field_name,
                                             method_name,
                                             clazz_name,
@@ -72,7 +79,7 @@ module Arrest
                                             foreign_key)
         add_attribute(hm_attr)
 
-        send :define_method, method_name do
+        send :define_method, method_name do # e.g. define 'teams' method for notation 'has_many :teams'
           if @has_many_collections == nil
             @has_many_collections = {}
           end
@@ -112,6 +119,7 @@ module Arrest
             clazz_name = clazz.to_s
           end
         end
+
         send :define_method, method_name do
           if @child_collections == nil
             @child_collections = {}
@@ -130,7 +138,7 @@ module Arrest
       end
 
 
-      def scope name, &block
+      def scope(name, &block)
         if @scopes == nil
           @scopes = []
         end
@@ -150,8 +158,8 @@ module Arrest
 
     attr_accessor :id
 
-    def initialize  hash={}, from_json = false
-      initialize_has_attributes hash, from_json
+    def initialize(hash={}, from_json = false)
+      initialize_has_attributes(hash, from_json)
     end
 
     def save
@@ -160,9 +168,10 @@ module Arrest
 
         success = !!AbstractResource::source.send(req_type, self)
 
-        if success # check for special sub resources
+        if success
+          # check for sub resources in case of n:m relationships
           self.class.all_fields.find_all{|f| f.is_a?(HasManySubResourceAttribute)}.each do |attr|
-            ids = self.send(attr.name)
+            ids = self.send(attr.name) # get ids_field e.g. for team has_many :users get 'self.user_ids'
             srifn = attr.sub_resource_field_name
             result = !!AbstractResource::source.put_sub_resource(self, srifn, ids)
             return false if !result
@@ -181,7 +190,7 @@ module Arrest
       AbstractResource::source().delete self
       true
     end
-    #
+
     # convenience method printing curl command
     def curl
       hs = ""

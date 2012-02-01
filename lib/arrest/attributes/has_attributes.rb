@@ -3,22 +3,22 @@ module Arrest
   module HasAttributes
     attr_accessor :attribute_values
 
-    def initialize_has_attributes hash, from_json = false, &blk
+    def initialize_has_attributes(hash, from_json = false, &blk)
       if block_given?
         @stubbed = true
         @load_blk = blk
       else
         @stubbed = false
       end
-      init_from_hash hash, from_json
+      init_from_hash(hash, from_json)
     end
 
-    def initialize hash = {}, from_json = false, &blk
+    def initialize(hash = {}, from_json = false, &blk)
       if block_given?
         @stubbed = true
         @load_blk = blk
       else
-        init_from_hash hash, from_json
+        init_from_hash(hash, from_json)
       end
     end
 
@@ -26,7 +26,7 @@ module Arrest
       base.extend HasAttributesMethods
     end
 
-    def init_from_hash as_i={}, from_json = false
+    def init_from_hash(as_i={}, from_json = false)
       @attribute_values = {} unless @attribute_values != nil
       as = {}
       as_i.each_pair do |k,v|
@@ -38,7 +38,7 @@ module Arrest
         else
           key = field.name
         end
-        value = as[key] 
+        value = as[key]
         converted = field.from_hash(value)
         self.send(field.name.to_s + '=', converted) unless converted == nil
       end
@@ -79,7 +79,7 @@ module Arrest
         @fields = []
       end
 
-      def attribute name, clazz, attribs = {} 
+      def attribute name, clazz, attribs = {}
         read_only = !!attribs[:read_only]
         add_attribute Attribute.new(name, read_only, clazz)
       end
@@ -90,16 +90,22 @@ module Arrest
         end
       end
 
-      def add_attribute attribute
-        if @fields == nil
-          @fields = []
-        end
-        send :define_method, "#{attribute.name}=" do |v|
-          Arrest::debug "setter #{self.class.name} #{attribute.name} = #{v}"
-          self.attribute_values[attribute.name] = v
+      def add_attribute(attribute)
+        @fields ||= []
+        if (attribute.is_a?(HasManySubResourceAttribute))
+          send :define_method, "#{attribute.name}=" do |v|
+            raise ArgumentError, 'Argument is not of Array type' unless v.is_a?(Array)
+            Arrest::debug "setter #{self.class.name} #{attribute.name} = #{v}"
+            self.attribute_values[attribute.name] = v
+          end
+        else
+          send :define_method, "#{attribute.name}=" do |v|
+            Arrest::debug "setter #{self.class.name} #{attribute.name} = #{v}"
+            self.attribute_values[attribute.name] = v
+          end
         end
         send :define_method, "#{attribute.name}" do
-          Arrest::debug "getter #{self.class.name} #{attribute.name}" 
+          Arrest::debug "getter #{self.class.name} #{attribute.name}"
           self.load_from_stub if @stubbed
           self.attribute_values[attribute.name]
         end

@@ -18,7 +18,7 @@ class Animal < Arrest::RestChild
   attribute :kind, String
   attribute :age, Integer
   attribute :male, Boolean
-  
+
   parent :zoo
 
   scope :server_males_only
@@ -34,7 +34,7 @@ end
 class SpecialZoo < Zoo
   custom_resource_name :zoo3000
   read_only_attributes({ :ro2 => String})
-  attributes({ 
+  attributes({
     :is_magic => Boolean,
     :opened_at => Time
   })
@@ -113,8 +113,8 @@ class Comment < Arrest::RootResource
                                              :comb => "CommentableB" }
 end
 class ExtendedComment < Comment
-  belongs_to :other_commentable, 
-             :field_name => "special_commentable_ref", 
+  belongs_to :other_commentable,
+             :field_name => "special_commentable_ref",
              :polymorphic => { :comc => :CommentableC }
 end
 
@@ -122,11 +122,15 @@ class DeleteMeAll < Arrest::RootResource
 end
 
 class Foo < Arrest::RootResource
-  has_many :bars#, :class_name => :Bar, :foreign_key => defaults to bar_id 
+  has_many :bars#, :class_name => :Bar, :foreign_key => defaults to bar_id
   has_many :other_bars, :class_name => :Bar, :foreign_key => :common_key
 end
 class Bar < Arrest::RootResource
   has_many :foos
   belongs_to :foo# foreign key defaults to class name, {:foreign_key => bar_id}
   belongs_to :other_foo, {:class_name => Foo, :foreign_key => :common_key}#, :foreign_key => :other_foo_key
+end
+
+class BarWithHasManySubResource < Arrest::RootResource
+  has_many :foos, :sub_resource => true
 end

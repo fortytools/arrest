@@ -27,5 +27,5 @@ module Arrest
       end
       converter.mk_json value
     end
-  end  
+  end
 end

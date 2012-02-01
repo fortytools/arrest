@@ -22,7 +22,7 @@ class FirstTest < Test::Unit::TestCase
     #assert_not_empty Arrest::RootResource.all_fields.select {|f| f.name == :id}, "RootResource should inherit id from AbstractResource"
     #assert_not_empty Zoo.all_fields.select {|f| f.name == :id}, "Zoo should inherit id field from RootResource"
   end
-  
+
   def test_create
     zoo_count_before = Zoo.all.length
     new_zoo = Zoo.new({:name => "Foo"})
@@ -85,7 +85,7 @@ class FirstTest < Test::Unit::TestCase
 
     zoo_reloaded = Zoo.find(new_zoo.id)
     assert_equal new_zoo.name, zoo_reloaded.name
-    
+
     zoo_reloaded.delete
     assert_equal zoo_count_before, Zoo.all.length
   end
@@ -115,7 +115,7 @@ class FirstTest < Test::Unit::TestCase
 
     assert_equal new_zoo_name, zoo_reloaded.name
   end
-  
+
   def test_child
     new_zoo = Zoo.new({:name => "Foo"})
     new_zoo.save
@@ -139,7 +139,7 @@ class FirstTest < Test::Unit::TestCase
     assert_equal 1, zoo_reloaded.animals.length
     assert_equal Animal, zoo_reloaded.animals.first.class
     assert_equal 42, zoo_reloaded.animals.first.age
-    
+
     animal_reloaded = zoo_reloaded.animals.first
 
     assert_equal new_zoo.id, animal_reloaded.zoo.id
@@ -203,18 +203,18 @@ class FirstTest < Test::Unit::TestCase
   def test_read_only_attributes
     now = Time.now
     zoo = SpecialZoo.new({
-      :name => "Zoo", 
-      :ro1 => "one", 
-      :ro2 => "two", 
+      :name => "Zoo",
+      :ro1 => "one",
+      :ro2 => "two",
       :is_magic => true,
       :opened_at => now
     })
-    
+
     assert_equal "Zoo", zoo.name
     assert_equal "one", zoo.ro1
     assert_equal "two", zoo.ro2
     assert_equal true, zoo.is_magic
-     
+
     hash = zoo.to_jhash
 
     assert_nil hash[:ro1]
@@ -227,7 +227,7 @@ class FirstTest < Test::Unit::TestCase
   def test_stub_delayed_load
     new_zoo = Zoo.new({:name => "Foo"})
     new_zoo.save
-    
+
     assert_not_nil new_zoo.id
 
     stubbed = Zoo.stub(new_zoo.id)
@@ -241,14 +241,14 @@ class FirstTest < Test::Unit::TestCase
   def test_stub_not_load_for_child_access
     new_zoo = Zoo.new({:name => "Foo"})
     new_zoo.save
-    
+
     assert_not_nil new_zoo.id
     # this is where the magic hapens
     stubbed = Zoo.stub(new_zoo.id)
 
     new_animal = Animal.new new_zoo, {:kind => "foo", :age => 42}
     new_animal.save
-    
+
     assert stubbed.stubbed?, "Zoo should be a stub, so not loaded yet"
 
     animals = stubbed.animals
@@ -265,11 +265,11 @@ class FirstTest < Test::Unit::TestCase
   def test_root_scope
     assert_not_nil Zoo.server_scope
   end
-  
+
   def test_child_scope
     new_zoo = Zoo.new({:name => "Foo"})
     new_zoo.save
-    
+
     assert_not_nil new_zoo.id
 
     assert_not_nil new_zoo.animals.server_males_only
@@ -319,9 +319,9 @@ class FirstTest < Test::Unit::TestCase
     p1 = ParentFilter.new({:afield => "ParentFoo"})
     p1.save
 
-    c1 = ChildFilter.new(p1, :bfield => "Foo") 
+    c1 = ChildFilter.new(p1, :bfield => "Foo")
     c1.save
-    c2 = ChildFilter.new(p1, :bfield => "Bar") 
+    c2 = ChildFilter.new(p1, :bfield => "Bar")
     c2.save
 
     reloaded_parent = ParentFilter.find(p1.id)
@@ -398,55 +398,55 @@ class FirstTest < Test::Unit::TestCase
     t = TimeClass.new(:time => now)
     assert_equal expected, t.to_jhash[:time], "This is the expected default format"
   end
-  
+
   def test_polymorphic_belongs_to
     coma = CommentableA.new()
     coma.save
     comb = CommentableB.new()
     comb.save
-    
+
     c = Comment.new(:commentable_ref => { :id => coma.id, :type => "coma"})
     result = c.commentable
     assert_equal coma.id, c.commentable_ref.id
     assert_equal result.class, CommentableA
-    
+
     c2 = Comment.new(:commentable_ref => { :id => comb.id, :type => "comb"})
     result2 = c2.commentable
     assert_equal comb.id, c2.commentable_ref.id
     assert_equal result2.class, CommentableB
   end
-  
+
   def test_polymorphic_belongs_to_extended
     coma = CommentableA.new()
     coma.save
     comc = CommentableC.new()
     comc.save
-    
-    c = ExtendedComment.new({ :special_commentable_ref => { :id => comc.id, :type => "comc"}, 
+
+    c = ExtendedComment.new({ :special_commentable_ref => { :id => comc.id, :type => "comc"},
                               :commentable_ref => { :id => coma.id, :type => "coma" }})
     assert_equal c.commentable.class, CommentableA
     assert_equal c.other_commentable.class, CommentableC
-    
+
     c.save
     c_reloaded = ExtendedComment.find(c.id)
     assert_equal comc.id, c_reloaded.special_commentable_ref.id
     assert_equal CommentableC, c_reloaded.other_commentable.class
     assert_equal CommentableA, c_reloaded.commentable.class
   end
-  
+
   def test_delete_all_root_resources
     d1 = DeleteMeAll.new()
     d1.save
     d2 = DeleteMeAll.new()
     d2.save
-    
+
     d1_rel = DeleteMeAll.find(d1.id)
     assert_not_nil d1_rel
     d2_rel = DeleteMeAll.find(d2.id)
     assert_not_nil d2_rel
     all = DeleteMeAll.all
     assert_equal 2, all.length
-    
+
     DeleteMeAll.delete_all
     all = DeleteMeAll.all
     assert_equal [], all
@@ -460,7 +460,7 @@ class FirstTest < Test::Unit::TestCase
     b1.save
     assert_equal 2, Arrest::Source.source.edge_count
     assert_equal 2, Arrest::Source.source.node_count
-    
+
     f2 = Foo.new()
     f2.save
     assert_equal 2, Arrest::Source.source.edge_count
@@ -470,7 +470,7 @@ class FirstTest < Test::Unit::TestCase
     assert_equal 2, Arrest::Source.source.edge_count
     assert_equal 3, Arrest::Source.source.node_count
   end
-  
+
   def test_has_many_matrix_in_mem_source
     f1 = Foo.new()
     f1.save
@@ -481,33 +481,33 @@ class FirstTest < Test::Unit::TestCase
 
     b1 = Bar.new({:foo_ids => [f1.id, f2.id], :foo_id => f3.id})
     b1.save
-    
+
     assert_equal 2, b1.foos.length
-    
+
     b2 = Bar.new({:foo_ids => [f2.id, f3.id], :foo_id =>f1.id})
     b2.save
-    
+
     f1.delete
-    
+
     b1_rel = Bar.find(b1.id)
     assert_equal 1, b1_rel.foos.length
     assert_equal f2.id, b1_rel.foos.first.id
-    
-    
+
+
     f2.bar_ids=[b1.id]
     f2.other_bar_ids=[b2.id]
     f2.save
     f2_rel = Foo.find(f2.id)
     assert_equal 1, f2_rel.bars.length
     assert_equal 1, f2_rel.other_bars.length
-    
+
     b2.delete
-    
+
     f2_rel = Foo.find(f2.id)
     assert_equal 1, f2_rel.bars.length
     assert_equal 0, f2_rel.other_bars.length
     assert_equal b1.id, f2_rel.bars.first.id
-    
+
   end
 
   def test_has_many_with_belongs_to
@@ -522,24 +522,23 @@ class FirstTest < Test::Unit::TestCase
     b1.save
     b2 = Bar.new({:other_foo_id => f2.id, :foo_id => f1.id})
     b2.save
-    
+
     f1_rel = Foo.find(f1.id)
     f2_rel = Foo.find(f2.id)
     f3_rel = Foo.find(f3.id)
-    
+
     assert_equal 1, f1_rel.bars.length
     assert_equal b1.id, f1_rel.other_bars.first.id
     assert_equal b1.id, f3_rel.bars.first.id
 
     assert_equal b2.id, f1_rel.bars.first.id
     assert_equal b2.id, f2_rel.other_bars.first.id
-    
+
     #test update
     b1.foo_id = f2.id
     b1.save
-    
-    
-    
+
+
     f3_rel = Foo.find(f3.id)
     assert f3_rel.bars.empty?
     f2_rel = Foo.find(f2.id)
@@ -574,8 +573,8 @@ class FirstTest < Test::Unit::TestCase
 
     assert_not_equal zoo1,zoo2, 'objects with different ids should not be equal'
 
-    assert_equal zoo1, zoo1, 'An object should be euqual to itself'
-    
+    assert_equal zoo1, zoo1, 'An object should be equal to itself'
+
     assert_not_equal zoo1, nil, 'Anactual object should not equal nil'
 
     zoo1_reloaded = Zoo.find(zoo1.id)
@@ -587,9 +586,24 @@ class FirstTest < Test::Unit::TestCase
     foo.id = zoo1.id
 
     assert_not_equal zoo1, foo, "Objects of different classes should not be euqal, even if they have the same id"
-    
+
     zoo1_reloaded.name = 'zoooooo'
     assert_equal zoo1, zoo1_reloaded, "Objects of the same class with the same id should be equal even if they differ in attributes (same as in rails)"
+  end
+
+  def test_has_many_sub_resource_attr_setter
+    b = BarWithHasManySubResource.new()
+    b.save
+
+    assert_raise ArgumentError do
+      b.foo_ids = nil
+    end
+
+    assert_raise ArgumentError do
+      b.foo_ids = "Tralala"
+    end
+
+    b.foo_ids = []
   end
 end
 

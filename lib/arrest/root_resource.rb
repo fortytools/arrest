@@ -7,7 +7,7 @@ module Arrest
         "#{self.resource_name}"
       end
 
-      def by_url url
+      def by_url(url)
         begin
           body = body_root(source().get_many(url))
         rescue Arrest::Errors::DocumentNotFoundError
@@ -20,9 +20,9 @@ module Arrest
         end
       end
 
-      def all filter={}
+      def all(filter={})
         begin
-          body = body_root(source().get_many self.resource_path, filter)
+          body = body_root(source().get_many(self.resource_path, filter))
         rescue Arrest::Errors::DocumentNotFoundError
           Arrest::logger.info "DocumentNotFoundError for #{self.resource_path} gracefully returning []"
           return []
@@ -40,10 +40,10 @@ module Arrest
           Arrest::logger.info "DocumentNotFoundError for #{self.resource_path}"
           raise Errors::DocumentNotFoundError.new
         end
-        self.build body
+        self.build(body)
       end
 
-      def find id
+      def find(id)
         if id == nil || "" == id
           Arrest::logger.info "DocumentNotFoundError: no id given"
           raise Errors::DocumentNotFoundError.new
@@ -97,7 +97,7 @@ module Arrest
         super(name)
         if block_given?
           send :define_singleton_method, name do
-            self.all.select &block 
+            self.all.select &block
           end
         else
           send :define_singleton_method, name do
@@ -122,8 +122,8 @@ module Arrest
         end
         n
       end
-      
-      
+
+
       def delete_all
         source().delete_all(self.resource_path)
       end
@@ -134,7 +134,7 @@ module Arrest
     end
 
     def resource_location
-      self.class.resource_path + '/' + self.id.to_s 
+      self.class.resource_path + '/' + self.id.to_s
     end
 
   end
