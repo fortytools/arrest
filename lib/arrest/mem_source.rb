@@ -1,20 +1,20 @@
 module Arrest
-  
+
   Edge = Struct.new(:foreign_key, :name, :id, :tail)
-  
+
   class MemSource
 
     attr_accessor :data
-    
+
 
     @@all_objects = {} # holds all objects of all types,
                        # each having a unique id
 
     @@collections = {} # maps urls to collections of ids of objects
-    
-    # For every has_many relation 
+
+    # For every has_many relation
     @@edge_matrix = {} # matrix of edges based on node ids for has_many and belongs_to relations
-    
+
     @@data = {}
 
     def objects
@@ -32,7 +32,7 @@ module Arrest
     def edge_matrix
       @@edge_matrix
     end
-    
+
     def edge_count
       @@edge_matrix.values.inject(0){|sum, edges| sum + edges.length }
     end
@@ -40,7 +40,7 @@ module Arrest
     def node_count
       @@edge_matrix.length
     end
-    
+
     def initialize
       @@all_objects = {} # holds all objects of all types,
 
@@ -100,7 +100,7 @@ module Arrest
     def get_many(sub, filters = {})
       Arrest::debug sub + (hash_to_query filters)
       # filters are ignored by mem impl so far
-      
+
       id_list = parse_for_has_many_relations(sub)
       if id_list.empty?
         id_list = @@collections[sub] || []
@@ -126,7 +126,7 @@ module Arrest
       end
       wrap val.to_jhash.to_json, 1
     end
-    
+
     def delete_all resource_path
       id_list = Array.new(@@collections[resource_path] || [])
       id_list.each do |base_id|
@@ -137,7 +137,7 @@ module Arrest
         remove_edges(@@edge_matrix, base_id)
       end
     end
-    
+
     def collection_json values
       single_jsons = values.map do |v|
         v.to_jhash.to_json
@@ -173,12 +173,12 @@ module Arrest
         out_edges = edge_matrix[id].find_all{|edge| edge.tail}
         in_edges_to_delete = out_edges.map do |out_edge|
           foreign_edges = edge_matrix[out_edge.id] # the edge set of the foreign node that this node points to
-          has_many_back_edges = foreign_edges.find_all do |for_edge| 
+          has_many_back_edges = foreign_edges.find_all do |for_edge|
             for_edge.id == id && for_edge.foreign_key == out_edge.foreign_key
           end
           [has_many_back_edges.first, out_edge.id] # first element may be nil
         end
-        
+
         in_edges_to_delete.each do |tupel|
           if tupel[0]
             edge_matrix[tupel[1]].delete_if{|e| e.id == tupel[0].id && e.foreign_key == tupel[0].foreign_key}
@@ -200,7 +200,7 @@ module Arrest
 
     def identify_and_store_edges(edge_matrix, rest_resource)
       from_id = rest_resource.id
-      
+
       rest_resource.class.all_fields.each do |attr|
         if attr.is_a?(Arrest::HasManyAttribute)
           to_ids = rest_resource.send(attr.name) # -> foo_ids
@@ -225,7 +225,7 @@ module Arrest
             return if hm_candidates.empty?
             has_many_node = hm_candidates.first
             url_part = has_many_node.url_part
-  
+
             edge_matrix[from_id] ||= Set.new()
             edge_matrix[from_id].add(Edge.new(foreign_key, url_part, to_id, true))
             edge_matrix[to_id] ||= Set.new()
@@ -235,13 +235,18 @@ module Arrest
       end
     end
 
+    def put_sub_resource(rest_resource, sub_url, ids)
+      location = "#{rest_resource.resource_location}/#{sub_url}"
+      body = ids.to_json
+      @@collections[location] = body
+    end
 
     def put(rest_resource)
       raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       old = @@all_objects[rest_resource.id]
-      
+
       remove_outgoing_edges(@@edge_matrix, old.id)
-      
+
       rest_resource.class.all_fields.each do |f|
         old.send("#{f.name}=", rest_resource.send(f.name))
       end
@@ -252,8 +257,9 @@ module Arrest
     end
 
 
+
     def post(rest_resource)
-      
+
       Arrest::debug "post -> #{rest_resource.class.name} #{rest_resource.to_hash} #{rest_resource.class.all_fields.map(&:name)}"
       raise "new object must have setter for id" unless rest_resource.respond_to?(:id=)
       raise "new object must not have id" if rest_resource.respond_to?(:id) && rest_resource.id != nil
