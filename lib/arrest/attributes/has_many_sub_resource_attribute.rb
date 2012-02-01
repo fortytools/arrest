@@ -1,5 +1,7 @@
 module Arrest
   class HasManySubResourceAttribute < HasManyAttribute
+    alias :super_from_hash :from_hash
+
     def initialize(ids_field_name,
                    method_name,
                    clazz_name,
@@ -16,7 +18,7 @@ module Arrest
 
     def from_hash(value)
       return [] if value == nil
-      super.from_hash(value)
+      super_from_hash(value)
     end
   end
 end
