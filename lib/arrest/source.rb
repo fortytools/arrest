@@ -53,7 +53,7 @@ module Arrest
   Source.mod = nil
   Source.header_decorator = Handlers::HeaderDecorator
   Source.debug = false
-  Source.json_key_converter = Handlers::KeyConverter
+  Source.json_key_converter = Handlers::IdentityJSONKeyConverter
   Source.error_handler = Handlers::ErrorHandler
   Source.call_logger = Handlers::CallLogger
   Source.skip_validations = false

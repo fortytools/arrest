@@ -21,7 +21,23 @@ module Arrest
 
     # a converter to transform between the name of the field in
     # the json object and the name of the field in ruby code.
-    # Default behaviour is that for an underscored name in ruby
+    # Default behaviour is the identity, i.e. the very same string in
+    # JSON as in RUBY
+    class IdentityJSONKeyConverter
+      class << self
+        def key_from_json name
+          name.to_s
+        end
+
+        def key_to_json name
+          name.to_s
+        end
+      end
+    end
+
+    # a converter to transform between the name of the field in
+    # the json object and the name of the field in ruby code.
+    # Special behaviour is that for an underscored name in ruby
     # a camel cased version in json expected:
     #     ruby    ->     json
     #   started_at    startedAt
