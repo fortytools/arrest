@@ -16,7 +16,7 @@ module Arrest
           "#{name}_id"
         end
       end
-      
+
       def create_and_add_attribute(field_name, polymorphic, read_only, foreign_key, class_name)
         if polymorphic
           add_attribute(PolymorphicAttribute.new(field_name.to_sym, read_only))
@@ -24,14 +24,14 @@ module Arrest
           add_attribute(BelongsToAttribute.new(field_name.to_sym, read_only, String, foreign_key, class_name))
         end
       end
-      
+
       def belongs_to(*args)
         arg = args[0]
         name = arg.to_s.downcase
         class_name = StringUtils.classify(name)
         foreign_key = "#{StringUtils.underscore(ClassUtils.simple_name(self))}_id"
         params = args[1] unless args.length < 2
-        
+
         if params
           read_only =  params[:read_only] == true
           polymorphic = params[:polymorphic] unless params[:polymorphic] == nil
@@ -42,13 +42,13 @@ module Arrest
         field_name = create_field_name(name, params, polymorphic)
 
         create_and_add_attribute(field_name, polymorphic, read_only, foreign_key, class_name)
-        
+
         send :define_method, name do
           val = self.send(field_name)
           if val == nil || val == ""
             return nil
-          end 
-          
+          end
+
           begin
             if polymorphic
               Arrest::Source.mod.const_get(polymorphic[val.type.to_sym]).find(val.id)
@@ -58,7 +58,7 @@ module Arrest
           rescue Errors::DocumentNotFoundError => e
             raise Errors::DocumentNotFoundError, "Couldnt find a #{class_name} with id #{val}"
           end
-          
+
         end
       end
     end

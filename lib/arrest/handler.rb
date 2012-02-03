@@ -7,7 +7,7 @@ module Arrest
   CallLog = Struct.new(:request, :response)
 
   # The classes in this module supply default behaviour
-  # for certain processing steps in the consumttion ot the 
+  # for certain processing steps in the consumption ot the
   # rest api
   module Handlers
 
