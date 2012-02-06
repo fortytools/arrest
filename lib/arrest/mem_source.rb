@@ -97,6 +97,23 @@ module Arrest
       []
     end
 
+    def get_many_other_ids(path)
+      matcher = /^.+\/([^\/]+)\/([^\/]+)_ids$/.match(path)
+      return [] unless matcher
+      object_id = matcher[1]
+      relation = matcher[2] + 's'
+      if (object_id && relation && @@edge_matrix[object_id])
+        id_list = []
+        @@edge_matrix[object_id].each do |edge|
+          if (edge.name.to_s == relation)
+            id_list << edge.id
+          end
+        end
+      end
+
+      wrap id_list, id_list.length
+    end
+
     def get_many(sub, filters = {})
       Arrest::debug sub + (hash_to_query filters)
       # filters are ignored by mem impl so far
@@ -236,9 +253,32 @@ module Arrest
     end
 
     def put_sub_resource(rest_resource, sub_url, ids)
+=begin
+      matcher = /^.+\/([^\/]+)\/([^\/]+)_ids$/.match(resource_path)
+      return [] unless matcher
+      object_id = matcher[1]
+      relation = matcher[2] + 's'
       location = "#{rest_resource.resource_location}/#{sub_url}"
       body = ids.to_json
-      @@collections[location] = body
+
+      @@edge_matrix[object_id] ||= []
+
+      alread_included = @@edge_matrix[object_id].find_all do |e|
+        e.name.to_s == sub_url && ids.include?(e.id)
+      end
+
+      @@edge_matrix[object_id].delete_if do |e| 
+        e.name.to_s == sub_url && !ids.include?(e.id)
+      end
+
+      need_to_create = ids - alread_included
+      need_to_create.each do |id|
+        @@edge_matrix[object_id] << Edge.new(foreign_key, url_part, id, true)
+      end
+
+
+=end
+      true
     end
 
     def put(rest_resource)

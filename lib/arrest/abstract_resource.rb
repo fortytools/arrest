@@ -35,11 +35,6 @@ module Arrest
       def build(hash)
         resource = self.new(hash, true)
 
-        # traverse fields for subresources and fill them in
-        self.all_fields.find_all{|f| f.is_a?(HasManySubResourceAttribute)}.each do |attr|
-          ids = AbstractResource::source.get_one("#{resource.resource_location}/#{attr.sub_resource_field_name}")
-          resource.send("#{attr.name}=", body_root(ids))
-        end
         resource
       end
 
@@ -80,13 +75,8 @@ module Arrest
         add_attribute(hm_attr)
 
         send :define_method, method_name do # e.g. define 'teams' method for notation 'has_many :teams'
-          if @has_many_collections == nil
-            @has_many_collections = {}
-          end
-          if @has_many_collections[method_name] == nil
-            @has_many_collections[method_name] = HasManyCollection.new(self, hm_attr)
-          end
-
+          @has_many_collections ||= {}
+          @has_many_collections[method_name] ||= HasManyCollection.new(self, hm_attr)
           @has_many_collections[method_name]
         end
       end

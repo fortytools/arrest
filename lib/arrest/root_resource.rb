@@ -54,7 +54,13 @@ module Arrest
           Arrest::logger.info "DocumentNotFoundError for #{self.resource_path}/#{id}"
           raise Errors::DocumentNotFoundError.new
         end
-        self.build body.merge({:id => id})
+        resource = self.build body.merge({:id => id})
+        # traverse fields for subresources and fill them in
+        self.all_fields.find_all{|f| f.is_a?(HasManySubResourceAttribute)}.each do |attr|
+          ids = AbstractResource::source.get_many_other_ids("#{resource.resource_location}/#{attr.sub_resource_field_name}")
+          resource.send("#{attr.name}=", body_root(ids))
+        end
+        resource
       end
 
       def filter name, &aproc

@@ -33,6 +33,10 @@ module Arrest
       response.body
     end
 
+    def get_many_other_ids(path)
+      get_one(path)
+    end
+
     def get_many(sub, filter={})
       response = self.connection().get do |req|
         req.url(sub, filter)
