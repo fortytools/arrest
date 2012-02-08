@@ -1,8 +1,8 @@
 module Arrest
   class RestChild < AbstractResource
     attr_accessor :parent
-    def initialize parent, h
-      super h
+    def initialize context, parent, h
+      super(context,h)
       @parent = parent
     end
 
@@ -17,14 +17,14 @@ module Arrest
       end
 
       def build parent, hash
-        self.new parent, hash
+        self.new(parent.context, parent, hash)
       end
 
 
-      def all_for parent
+      def all_for(parent)
         raise "Parent has no id yet" unless parent.id
         begin
-          body_root(source().get_many self.resource_path_for(parent)).map do |h|
+          body_root(source().get_many(parent.context, self.resource_path_for(parent))).map do |h|
             self.build(parent, h)
           end
         rescue Arrest::Errors::DocumentNotFoundError
@@ -32,14 +32,14 @@ module Arrest
         end
       end
 
-      def find id
+      def find(context, id)
         raise "find cannot be executed for child resources - use find_for with a parent"
       end
 
-      def find_for parent,id
-        r = source().get_one "#{self.resource_path_for(parent)}/#{id}"
+      def find_for(context, parent,id)
+        r = source().get_one(context, "#{self.resource_path_for(parent)}/#{id}")
         body = body_root(r)
-        self.build body
+        self.build(body)
       end
 
       def filter name, &aproc
@@ -54,7 +54,7 @@ module Arrest
         end
       end
 
-      def scope name, &block
+      def scope(name, &block)
         super name
         if block_given?
           send :define_singleton_method, name do |parent|
@@ -63,7 +63,7 @@ module Arrest
         else
           send :define_singleton_method, name do |parent|
             raise "Parent has no id yet" unless parent.id
-            body_root(source().get_many self.scoped_path_for(parent, name)).map do |h|
+            body_root(source().get_many(parent.context, self.scoped_path_for(parent, name))).map do |h|
               self.build(parent, h)
             end
           end

@@ -4,9 +4,10 @@ module Arrest
       super name, read_only, clazz
     end
 
-    def from_hash value
+    def from_hash(parent, value)
       return nil unless value != nil
-      @clazz.new value
+      puts "CLAZZZZZ :#{@clazz.name}"
+      @clazz.new(parent, value)
     end
 
     def to_hash val

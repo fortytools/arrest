@@ -9,11 +9,11 @@ module Arrest
       super name, read_only, clazz
     end
 
-    def from_hash value
+    def from_hash(parent, value)
       return nil unless value != nil
       raise "Expected an array but got #{value.class.name}" unless value.is_a?(Array)
       value.map do |v|
-        @clazz.new v
+        @clazz.new(parent, v)
       end
     end
 

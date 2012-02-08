@@ -6,8 +6,15 @@ module Arrest
     include HasAttributes
     include BelongsTo
 
-    def initialize h
+    attr_reader :parent
+
+    def initialize parent, h
+      @parent = parent
       init_from_hash h
+    end
+
+    def context
+      parent.context
     end
   end
 end

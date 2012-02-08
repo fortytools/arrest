@@ -13,16 +13,18 @@ module Arrest
       @base
     end
 
-    def add_headers(headers)
-      Arrest::Source.header_decorator.headers.each_pair do |k,v|
+    def add_headers(context,headers)
+      decorator = context.header_decorator
+      decorator ||= Arrest::Source.header_decorator
+      decorator.headers.each_pair do |k,v|
         headers[k.to_s] = v.to_s
       end
     end
 
-    def get_one(sub, filter={})
+    def get_one(context, sub, filter={})
       response = self.connection().get do |req|
         req.url(sub, filter)
-        add_headers(req.headers)
+        add_headers(context, req.headers)
       end
       rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil)
       rsl = ResponseLog.new(response.env[:status], response.body)
@@ -33,14 +35,14 @@ module Arrest
       response.body
     end
 
-    def get_many_other_ids(path)
-      get_one(path)
+    def get_many_other_ids(context, path)
+      get_one(context, path)
     end
 
-    def get_many(sub, filter={})
+    def get_many(context, sub, filter={})
       response = self.connection().get do |req|
         req.url(sub, filter)
-        add_headers(req.headers)
+        add_headers(context, req.headers)
       end
       rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil)
       rsl = ResponseLog.new(response.env[:status], response.body)
@@ -49,10 +51,10 @@ module Arrest
     end
 
 
-    def delete_all(resource_path)
+    def delete_all(context, resource_path)
         response = self.connection().delete do |req|
         req.url(resource_path)
-        add_headers(req.headers)
+        add_headers(context, req.headers)
       end
       rql = RequestLog.new(:delete, "#{resource_path}", nil)
       rsl = ResponseLog.new(response.env[:status], response.body)
@@ -61,11 +63,11 @@ module Arrest
       response.env[:status] == 200
     end
 
-    def delete(rest_resource)
+    def delete(context, rest_resource)
       raise "To delete an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       response = self.connection().delete do |req|
         req.url(rest_resource.resource_location)
-        add_headers(req.headers)
+        add_headers(context, req.headers)
       end
       rql = RequestLog.new(:delete, rest_resource.resource_location, nil)
       rsl = ResponseLog.new(response.env[:status], response.body)
@@ -80,20 +82,20 @@ module Arrest
       internal_put(rest_resource, location, body)
     end
 
-    def put(rest_resource)
+    def put(context, rest_resource)
       raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       hash = rest_resource.to_jhash
       hash.delete(:id)
       hash.delete("id")
       body = hash.to_json
 
-      internal_put(rest_resource, rest_resource.resource_location, body)
+      internal_put(context, rest_resource, rest_resource.resource_location, body)
     end
 
-    def internal_put(rest_resource, location, body)
+    def internal_put(context, rest_resource, location, body)
       response = self.connection().put do |req|
         req.url(location)
-        add_headers(req.headers)
+        add_headers(context, req.headers)
         req.body = body
       end
       rql = RequestLog.new(:put, location, body)
@@ -105,7 +107,7 @@ module Arrest
       response.env[:status] == 200
     end
 
-    def post(rest_resource)
+    def post(context, rest_resource)
       raise "new object must have setter for id" unless rest_resource.respond_to?(:id=)
       raise "new object must not have id" if rest_resource.respond_to?(:id) && rest_resource.id != nil
       hash = rest_resource.to_jhash
@@ -117,7 +119,7 @@ module Arrest
       body = hash.to_json
       response = self.connection().post do |req|
         req.url rest_resource.resource_path
-        add_headers req.headers
+        add_headers(context, req.header)
         req.body = body
       end
       rql = RequestLog.new(:post, rest_resource.resource_path, body)

@@ -5,11 +5,12 @@ class NestedResourcesTest < Test::Unit::TestCase
 
   def setup
      Arrest::Source.source = nil
+     @scope = Arrest::ScopedRoot.new
      #Arrest::Source.debug = true
   end
 
   def test_instance_test
-    n = ANestedClass.new({:name => "foo", :underscore_name => "Bar"})
+    n = ANestedClass.new(nil, {:name => "foo", :underscore_name => "Bar"})
     assert_equal "foo", n.name
     assert_equal "Bar", n.underscore_name
   end
@@ -25,7 +26,7 @@ class NestedResourcesTest < Test::Unit::TestCase
       }
     }
 
-    actual = WithNested.new(input)
+    actual = @scope.WithNested.new(input)
     assert_equal 'parent', actual.parent_name
     assert_equal false, actual.bool
     assert actual.respond_to? :nested_object, "The parent object should have an accessor for the nested object"
@@ -44,7 +45,7 @@ class NestedResourcesTest < Test::Unit::TestCase
       }
     }
 
-    actual = WithNested.new(input)
+    actual = @scope.WithNested.new(input)
 
     assert_equal_hashes input, actual.to_hash
 
@@ -65,14 +66,14 @@ class NestedResourcesTest < Test::Unit::TestCase
       ]
     }
 
-    actual = WithManyNested.new(input)
+    actual = @scope.WithManyNested.new(input)
 
     assert_equal_hashes input, actual.to_hash
 
   end
 
   def test_belongs_to_to_hash
-    new_zoo = Zoo.new({:name => "Foo"})
+    new_zoo = @scope.Zoo.new({:name => "Foo"})
     new_zoo.save
 
     input = {
@@ -85,7 +86,7 @@ class NestedResourcesTest < Test::Unit::TestCase
       }
     }
 
-    actual = WithNestedBelongingTo.new(input)
+    actual = @scope.WithNestedBelongingTo.new(input)
 
     assert_equal_hashes input, actual.to_hash
 
@@ -96,10 +97,10 @@ class NestedResourcesTest < Test::Unit::TestCase
 
   def test_custom_belongs_to
 
-    new_zoo = Zoo.new({:name => "Foo"})
+    new_zoo = @scope.Zoo.new({:name => "Foo"})
     new_zoo.save
 
-    c = CustomNamedBelongsTo.new({:name => 'Bar', :schinken => new_zoo.id, :batzen => new_zoo.id})
+    c = @scope.CustomNamedBelongsTo.new({:name => 'Bar', :schinken => new_zoo.id, :batzen => new_zoo.id})
 
     c.save
     assert_not_nil c.id, "Persisted object should have id"
@@ -108,7 +109,7 @@ class NestedResourcesTest < Test::Unit::TestCase
 
 
     assert_not_nil c.id, "Persisted zoo should have id"
-    c_reloaded = CustomNamedBelongsTo.all.first
+    c_reloaded = @scope.CustomNamedBelongsTo.all.first
     assert_equal  "Foo", c_reloaded.zoo_thing.name
     assert_equal  "Foo", c_reloaded.zoo.name
 

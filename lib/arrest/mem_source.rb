@@ -97,7 +97,7 @@ module Arrest
       []
     end
 
-    def get_many_other_ids(path)
+    def get_many_other_ids(context,path)
       matcher = /^.+\/([^\/]+)\/([^\/]+)_ids$/.match(path)
       return [] unless matcher
       object_id = matcher[1]
@@ -114,7 +114,7 @@ module Arrest
       wrap id_list, id_list.length
     end
 
-    def get_many(sub, filters = {})
+    def get_many(context,sub, filters = {})
       Arrest::debug sub + (hash_to_query filters)
       # filters are ignored by mem impl so far
 
@@ -130,7 +130,7 @@ module Arrest
       wrap collection_json(objects), id_list.length
     end
 
-    def get_one sub, filters = {}
+    def get_one(context, sub, filters = {})
       Arrest::debug sub + (hash_to_query filters)
       # filters are ignored by mem impl so far
       idx = sub.rindex '/'
@@ -144,7 +144,7 @@ module Arrest
       wrap val.to_jhash.to_json, 1
     end
 
-    def delete_all resource_path
+    def delete_all(context, resource_path)
       id_list = Array.new(@@collections[resource_path] || [])
       id_list.each do |base_id|
         @@collections.each_pair do |k,v|
@@ -175,7 +175,7 @@ module Arrest
     end
 
 
-    def delete(rest_resource)
+    def delete(context, rest_resource)
       raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       @@all_objects.delete(rest_resource.id)
       @@collections.each_pair do |k,v|
@@ -281,7 +281,7 @@ module Arrest
       true
     end
 
-    def put(rest_resource)
+    def put(context, rest_resource)
       raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       old = @@all_objects[rest_resource.id]
 
@@ -298,7 +298,7 @@ module Arrest
 
 
 
-    def post(rest_resource)
+    def post(context, rest_resource)
 
       Arrest::debug "post -> #{rest_resource.class.name} #{rest_resource.to_hash} #{rest_resource.class.all_fields.map(&:name)}"
       raise "new object must have setter for id" unless rest_resource.respond_to?(:id=)

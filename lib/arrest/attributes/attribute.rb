@@ -8,7 +8,7 @@ module Arrest
       @json_name = Source.json_key_converter.key_to_json(name).to_sym
     end
 
-    def from_hash value
+    def from_hash(parent, value)
       return if value == nil
       converter = CONVERTER[@clazz]
       if converter == nil

@@ -51,9 +51,9 @@ module Arrest
 
           begin
             if polymorphic
-              Arrest::Source.mod.const_get(polymorphic[val.type.to_sym]).find(val.id)
+              Arrest::Source.mod.const_get(polymorphic[val.type.to_sym]).find(self.context, val.id)
             else
-              Arrest::Source.mod.const_get(class_name).find(val)
+              Arrest::Source.mod.const_get(class_name).find(self.context, val)
             end
           rescue Errors::DocumentNotFoundError => e
             raise Errors::DocumentNotFoundError, "Couldnt find a #{class_name} with id #{val}"

@@ -10,10 +10,12 @@ module Arrest
       else
         @stubbed = false
       end
+      raise "hash expected but got #{hash.class}" unless hash.is_a?(Hash)
       init_from_hash(hash, from_json)
     end
 
     def initialize(hash = {}, from_json = false, &blk)
+      raise "hash expected but got #{hash.class}" unless hash.is_a?(Hash)
       if block_given?
         @stubbed = true
         @load_blk = blk
@@ -27,6 +29,7 @@ module Arrest
     end
 
     def init_from_hash(as_i={}, from_json = false)
+      raise "hash expected but got #{as_i.class}" unless as_i.is_a?(Hash)
       @attribute_values = {} unless @attribute_values != nil
       as = {}
       as_i.each_pair do |k,v|
@@ -39,7 +42,7 @@ module Arrest
           key = field.name
         end
         value = as[key]
-        converted = field.from_hash(value)
+        converted = field.from_hash(self, value)
         self.send(field.name.to_s + '=', converted) unless converted == nil
       end
     end
@@ -51,7 +54,7 @@ module Arrest
         matching_fields = fields.find_all{|f| f.name.to_s == k.to_s}
         field = matching_fields.first
         if field
-          converted = field.from_hash(v)
+          converted = field.from_hash(self, v)
           self.send("#{k}=", converted)
         end
       end

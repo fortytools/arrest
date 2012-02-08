@@ -6,6 +6,45 @@ require 'active_model'
 Scope = Struct.new(:name, :block)
 
 module Arrest
+
+  class RequestContext
+    attr_accessor :header_decorator
+  end
+
+  class ScopedRoot
+    attr_accessor :context
+
+    def initialize(context = Arrest::RequestContext.new())
+      @context = context
+    end
+
+    def self.register_resource(clazz)
+      send :define_method, ClassUtils.simple_name(clazz) do ||
+        proxy = clazz.mk_proxy(self)
+        proxy
+      end
+    end
+
+    def get_context
+      @context
+    end
+  end
+
+  class ResourceProxy
+    def initialize(resource, context_provider)
+      @resource = resource
+      @context_provider = context_provider
+    end
+
+
+    def method_missing(*args, &block)
+      params = [@context_provider.get_context]
+      params += args.drop(1)
+      @resource.send(args.first, *params)
+    end
+
+  end
+
   class AbstractResource
     extend ActiveModel::Naming
     include ActiveModel::Validations
@@ -13,8 +52,18 @@ module Arrest
     include HasAttributes
     attribute :id, String
 
+    attr_accessor :context
+
     class << self
       attr_reader :scopes
+
+      def inherited(child)
+        ScopedRoot::register_resource(child)
+      end
+
+      def mk_proxy(context_provider)
+        ResourceProxy.new(self, context_provider)
+      end
 
       def source
         Arrest::Source::source
@@ -33,8 +82,7 @@ module Arrest
       end
 
       def build(hash)
-        resource = self.new(hash, true)
-
+        resource = self.new(@context, hash, true)
         resource
       end
 
@@ -46,7 +94,7 @@ module Arrest
        if @custom_resource_name
          @custom_resource_name
        else
-         StringUtils.plural self.name.sub(/.*:/,'').downcase
+         StringUtils.plural(self.name.sub(/.*:/,'').downcase)
        end
       end
 
@@ -148,7 +196,8 @@ module Arrest
 
     attr_accessor :id
 
-    def initialize(hash={}, from_json = false)
+    def initialize(context, hash={}, from_json = false)
+      @context = context
       initialize_has_attributes(hash, from_json)
     end
 
@@ -156,14 +205,14 @@ module Arrest
       if Source.skip_validations || self.valid?
         req_type = new_record? ? :post : :put
 
-        success = !!AbstractResource::source.send(req_type, self)
+        success = !!AbstractResource::source.send(req_type, @context, self)
 
         if success
           # check for sub resources in case of n:m relationships
           self.class.all_fields.find_all{|f| f.is_a?(HasManySubResourceAttribute)}.each do |attr|
             ids = self.send(attr.name) # get ids_field e.g. for team has_many :users get 'self.user_ids'
             srifn = attr.sub_resource_field_name
-            result = !!AbstractResource::source.put_sub_resource(self, srifn, ids)
+            result = !!AbstractResource::source.put_sub_resource( self, srifn, ids)
             return false if !result
           end
           return true
@@ -177,7 +226,7 @@ module Arrest
     end
 
     def delete
-      AbstractResource::source().delete self
+      AbstractResource::source().delete(@context, self)
       true
     end
 

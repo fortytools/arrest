@@ -12,7 +12,7 @@ module Arrest
 
     def build attributes = {}
       extended_attrs = attributes.merge({@foreign_key_name => @parent.id})
-      resolved_class.new extended_attrs
+      resolved_class.new(@parent.context, extended_attrs)
     end
 
     def method_missing(*args, &block)
@@ -28,7 +28,7 @@ module Arrest
     def children
       if @children == nil
         url = @parent.resource_location + '/' + @url_part.to_s
-        @children = resolved_class.by_url(url)
+        @children = resolved_class.by_url(@parent.context, url)
       end
       @children
     end

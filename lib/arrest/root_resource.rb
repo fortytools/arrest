@@ -7,9 +7,9 @@ module Arrest
         "#{self.resource_name}"
       end
 
-      def by_url(url)
+      def by_url(context, url)
         begin
-          body = body_root(source().get_many(url))
+          body = body_root(source().get_many(context, url))
         rescue Arrest::Errors::DocumentNotFoundError
           Arrest::logger.info "DocumentNotFoundError for #{url} gracefully returning []"
           return []
@@ -20,9 +20,9 @@ module Arrest
         end
       end
 
-      def all(filter={})
+      def all(context, filter={})
         begin
-          body = body_root(source().get_many(self.resource_path, filter))
+          body = body_root(source().get_many(context, self.resource_path, filter))
         rescue Arrest::Errors::DocumentNotFoundError
           Arrest::logger.info "DocumentNotFoundError for #{self.resource_path} gracefully returning []"
           return []
@@ -43,12 +43,12 @@ module Arrest
         self.build(body)
       end
 
-      def find(id)
+      def find(context, id)
         if id == nil || "" == id
           Arrest::logger.info "DocumentNotFoundError: no id given"
           raise Errors::DocumentNotFoundError.new
         end
-        r = source().get_one "#{self.resource_path}/#{id}"
+        r = source().get_one(context, "#{self.resource_path}/#{id}")
         body = body_root(r)
         if body == nil || body.empty?
           Arrest::logger.info "DocumentNotFoundError for #{self.resource_path}/#{id}"
@@ -57,7 +57,7 @@ module Arrest
         resource = self.build body.merge({:id => id})
         # traverse fields for subresources and fill them in
         self.all_fields.find_all{|f| f.is_a?(HasManySubResourceAttribute)}.each do |attr|
-          ids = AbstractResource::source.get_many_other_ids("#{resource.resource_location}/#{attr.sub_resource_field_name}")
+          ids = AbstractResource::source.get_many_other_ids(context, "#{resource.resource_location}/#{attr.sub_resource_field_name}")
           resource.send("#{attr.name}=", body_root(ids))
         end
         resource
@@ -76,8 +76,8 @@ module Arrest
               instance.instance_exec(call_args, &aproc)
             end
           end
-          send :define_singleton_method, name do |args = nil|
-            self.all.select do |instance|
+          send :define_singleton_method, name do |context, args = nil|
+            self.all(context).select do |instance|
               instance.instance_exec(args, &aproc)
             end
           end
@@ -102,12 +102,12 @@ module Arrest
       def scope name, &block
         super(name)
         if block_given?
-          send :define_singleton_method, name do
-            self.all.select &block
+          send :define_singleton_method, name do |context|
+            self.all(context).select(&block)
           end
         else
-          send :define_singleton_method, name do
-            body_root(source().get_many self.scoped_path(name)).map do |h|
+          send :define_singleton_method, name do |context|
+            body_root(source().get_many(context, self.scoped_path(name))).map do |h|
               self.build(h)
             end
           end
@@ -119,10 +119,10 @@ module Arrest
         resource_path + '/' + scope_name.to_s
       end
 
-      def stub stub_id
-        n = self.new
+      def stub(context, stub_id)
+        n = self.new(context)
         n.initialize_has_attributes({:id => stub_id}) do
-          r = n.class.source().get_one "#{self.resource_path}/#{stub_id}"
+          r = n.class.source().get_one(@context, "#{self.resource_path}/#{stub_id}")
           body = n.class.body_root(r)
           n.init_from_hash(body, true)
         end
@@ -130,8 +130,8 @@ module Arrest
       end
 
 
-      def delete_all
-        source().delete_all(self.resource_path)
+      def delete_all(context)
+        source().delete_all(context, self.resource_path)
       end
     end
 

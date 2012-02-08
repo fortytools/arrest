@@ -16,7 +16,7 @@ module Arrest
       @name
     end
 
-    def from_hash(value)
+    def from_hash(parent, value)
       return [] if value == nil
       super_from_hash(value)
     end
