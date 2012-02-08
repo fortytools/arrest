@@ -42,6 +42,11 @@ module Arrest
       params += args.drop(1)
       @resource.send(args.first, *params)
     end
+    
+    def load(*args)
+      ext = [@context_provider.get_context] + args
+      @resource.load(*ext)
+    end
 
   end
 

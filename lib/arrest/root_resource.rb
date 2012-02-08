@@ -33,8 +33,8 @@ module Arrest
         end
       end
 
-      def load
-        r = source().get_one "#{self.resource_path}"
+      def load(context)
+        r = source().get_one(context, "#{self.resource_path}")
         body = body_root(r)
         if body == nil || body.empty?
           Arrest::logger.info "DocumentNotFoundError for #{self.resource_path}"
