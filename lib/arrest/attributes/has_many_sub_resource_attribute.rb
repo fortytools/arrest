@@ -18,7 +18,7 @@ module Arrest
 
     def from_hash(parent, value)
       return [] if value == nil
-      super_from_hash(value)
+      super_from_hash(parent, value)
     end
   end
 end

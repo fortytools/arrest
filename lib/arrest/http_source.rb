@@ -14,7 +14,7 @@ module Arrest
     end
 
     def add_headers(context,headers)
-      decorator = context.header_decorator
+      decorator = context.header_decorator if context
       decorator ||= Arrest::Source.header_decorator
       decorator.headers.each_pair do |k,v|
         headers[k.to_s] = v.to_s
@@ -89,13 +89,16 @@ module Arrest
       hash.delete("id")
       body = hash.to_json
 
-      internal_put(context, rest_resource, rest_resource.resource_location, body)
+      internal_put(rest_resource, rest_resource.resource_location, body)
     end
 
-    def internal_put(context, rest_resource, location, body)
+
+
+
+    def internal_put(rest_resource, location, body)
       response = self.connection().put do |req|
         req.url(location)
-        add_headers(context, req.headers)
+        add_headers(rest_resource.context, req.headers)
         req.body = body
       end
       rql = RequestLog.new(:put, location, body)
@@ -119,7 +122,7 @@ module Arrest
       body = hash.to_json
       response = self.connection().post do |req|
         req.url rest_resource.resource_path
-        add_headers(context, req.header)
+        add_headers(context, req.headers)
         req.body = body
       end
       rql = RequestLog.new(:post, rest_resource.resource_path, body)

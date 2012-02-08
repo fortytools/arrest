@@ -6,7 +6,6 @@ module Arrest
 
     def from_hash(parent, value)
       return nil unless value != nil
-      puts "CLAZZZZZ :#{@clazz.name}"
       @clazz.new(parent, value)
     end
 
