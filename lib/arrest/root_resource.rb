@@ -73,7 +73,7 @@ module Arrest
             collection = args[0]
             call_args = args.drop(1)
             collection.select do |instance|
-              instance.instance_exec(call_args, &aproc)
+              instance.instance_exec(*call_args, &aproc)
             end
           end
           send :define_singleton_method, name do |context, args = nil|
