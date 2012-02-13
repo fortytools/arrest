@@ -5,9 +5,8 @@ module Arrest
                    method_name,
                    clazz_name,
                    url_part,
-                   foreign_key,
-                   read_only = false)
-      super(ids_field_name, read_only, Array)
+                   foreign_key)
+      super(ids_field_name, true, Array)
       @method_name = method_name.to_sym
       @clazz_name = clazz_name.to_sym
       @url_part = url_part.to_sym
