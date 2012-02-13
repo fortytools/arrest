@@ -169,8 +169,16 @@ module Arrest
         err = Arrest::Source.error_handler.convert(body,status)
         if err.is_a?(String)
           rest_resource.errors.add(:base, err)
-        else # is_a?(Array)
-          err.map{|k,v| rest_resource.errors.add(k,v)}
+        else
+          err.map do |k,v|
+            if v.is_a?(String)
+              rest_resource.errors.add(k,v)
+            else
+              v.map do |msg|
+                rest_resource.errors.add(k,msg)
+              end
+            end
+          end
         end
       end
 
