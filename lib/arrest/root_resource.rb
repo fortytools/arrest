@@ -29,7 +29,9 @@ module Arrest
         end
         body ||= []
         body.map do |h|
-          self.build h
+          obj = self.build h
+          obj.context = context
+          obj
         end
       end
 
@@ -40,7 +42,9 @@ module Arrest
           Arrest::logger.info "DocumentNotFoundError for #{self.resource_path}"
           raise Errors::DocumentNotFoundError.new
         end
-        self.build(body)
+        res = self.build(body)
+        res.context = context
+        res
       end
 
       def find(context, id)

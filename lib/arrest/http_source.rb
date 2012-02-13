@@ -16,7 +16,8 @@ module Arrest
     def add_headers(context,headers)
       decorator = context.header_decorator if context
       decorator ||= Arrest::Source.header_decorator
-      decorator.headers.each_pair do |k,v|
+      hds = decorator.headers
+      hds.each_pair do |k,v|
         headers[k.to_s] = v.to_s
       end
     end
