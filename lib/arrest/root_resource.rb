@@ -20,6 +20,14 @@ module Arrest
         end
       end
 
+      def first(context, filter={})
+        all(context,filter).first
+      end
+
+      def end(context, filter={})
+        all(context,filter).last
+      end
+
       def all(context, filter={})
         begin
           body = body_root(source().get_many(context, self.resource_path, filter))
