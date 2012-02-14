@@ -1,4 +1,6 @@
 require "arrest/source"
+require 'active_model'
+
 module Arrest
 
 
@@ -15,6 +17,7 @@ module Arrest
   end
 
   module HasAttributes
+
     attr_accessor :attribute_values
 
     def initialize_has_attributes(hash, from_json = false, &blk)
@@ -38,8 +41,10 @@ module Arrest
       end
     end
 
+    # enables the implicit inclusion of these methods as class methods in the including class
+    # (AbstractResource)
     def self.included(base) # :nodoc:
-      base.extend HasAttributesMethods
+      base.extend HasAttributesClassMethods
     end
 
     def init_from_hash(as_i={}, from_json = false)
@@ -59,6 +64,10 @@ module Arrest
         converted = field.from_hash(self, value)
         self.send(field.name.to_s + '=', converted) unless converted == nil
       end
+    end
+
+    def attributes
+      self.attribute_values
     end
 
     def attributes=(attribute_hash = {})
@@ -111,8 +120,7 @@ module Arrest
       result
     end
 
-    module HasAttributesMethods
-
+    module HasAttributesClassMethods
       attr_accessor :fields
 
       def initialize
@@ -132,10 +140,15 @@ module Arrest
 
       def add_attribute(attribute)
         @fields ||= []
+        # define setter for attribute value
         if (attribute.is_a?(HasManySubResourceAttribute))
           send :define_method, "#{attribute.name}=" do |v|
             raise ArgumentError, 'Argument is not of Array type' unless v.is_a?(Array)
             Arrest::debug "setter #{self.class.name} #{attribute.name} = #{v}"
+
+            # inform ActiveModel::Dirty about dirtiness of this attribute
+            self.send("#{attribute.name}_will_change!") unless v == self.attribute_values[attribute.name]
+
             self.attribute_values[attribute.name] = v
           end
         else
@@ -144,6 +157,8 @@ module Arrest
             self.attribute_values[attribute.name] = v
           end
         end
+
+        # define getter for attribute value
         send :define_method, "#{attribute.name}" do
           Arrest::debug "getter #{self.class.name} #{attribute.name}"
           self.load_from_stub if @stubbed

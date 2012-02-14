@@ -36,7 +36,6 @@ module Arrest
       @context_provider = context_provider
     end
 
-
     def method_missing(*args, &block)
       params = [@context_provider.get_context]
       params += args.drop(1)
@@ -54,6 +53,7 @@ module Arrest
     extend ActiveModel::Naming
     include ActiveModel::Validations
     include ActiveModel::Conversion
+    include ActiveModel::Dirty
     include HasAttributes
     attribute :id, String
 
@@ -86,8 +86,16 @@ module Arrest
         body
       end
 
-      def build(hash)
-        resource = self.new(@context, hash, true)
+      def build(context, hash)
+        resource = self.new(context, hash, true)
+
+        # traverse fields for subresources and fill them in
+        self.all_fields.find_all{|f| f.is_a?(HasManySubResourceAttribute)}.each do |attr|
+          ids = AbstractResource::source.get_many_other_ids(context, "#{resource.resource_location}/#{attr.sub_resource_field_name}")
+          resource.send("#{attr.name}=", body_root(ids))
+        end
+        resource.clear_dirtiness()
+
         resource
       end
 
@@ -140,18 +148,19 @@ module Arrest
       def create_has_many_attribute(sub_resource, ids_field_name, method_name,
                                     clazz_name, url_part, foreign_key, read_only)
         if sub_resource
-          HasManySubResourceAttribute.new(ids_field_name,
-                                          method_name,
-                                          clazz_name,
-                                          url_part,
-                                          foreign_key)
+          define_attribute_methods [ids_field_name]
+          return HasManySubResourceAttribute.new(ids_field_name,
+                                                 method_name,
+                                                 clazz_name,
+                                                 url_part,
+                                                 foreign_key)
         else
-          HasManyAttribute.new(ids_field_name,
-                               method_name,
-                               clazz_name,
-                               url_part,
-                               foreign_key,
-                               read_only)
+          return HasManyAttribute.new(ids_field_name,
+                                      method_name,
+                                      clazz_name,
+                                      url_part,
+                                      foreign_key,
+                                      read_only)
         end
       end
 
@@ -196,7 +205,7 @@ module Arrest
       def read_only_attributes(args)
         args.each_pair do |name, clazz|
           self.send :attr_accessor,name
-          add_attribute Attribute.new(name, true, clazz)
+          add_attribute(Attribute.new(name, true, clazz))
         end
       end
     end
@@ -210,20 +219,26 @@ module Arrest
       initialize_has_attributes(hash, from_json)
     end
 
+    def clear_dirtiness
+      @changed_attributes.clear if @changed_attributes
+    end
+
     def save
       if Source.skip_validations || self.valid?
         req_type = new_record? ? :post : :put
-
         success = !!AbstractResource::source.send(req_type, @context, self)
 
         if success
           # check for sub resources in case of n:m relationships
           self.class.all_fields.find_all{|f| f.is_a?(HasManySubResourceAttribute)}.each do |attr|
-            ids = self.send(attr.name) # get ids_field e.g. for team has_many :users get 'self.user_ids'
-            srifn = attr.sub_resource_field_name
-            result = !!AbstractResource::source.put_sub_resource(self, srifn, ids)
-            return false if !result
+            if self.send("#{attr.name}_changed?") # check whether this 'subresource' attribute has been touched
+              ids = self.send(attr.name) # get ids_field e.g. for team has_many :users get 'self.user_ids'
+              srifn = attr.sub_resource_field_name
+              result = !!AbstractResource::source.put_sub_resource(self, srifn, ids)
+              return false if !result
+            end
           end
+          clear_dirtiness() # unset the dirtiness after saving (only used for HasManySubResourceAttributes), see ActiveModel::Dirty
           return true
         end
       end

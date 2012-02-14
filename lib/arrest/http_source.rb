@@ -6,7 +6,7 @@ module Arrest
   class HttpSource
 
     attr_reader :base
-    
+
     def initialize base
       @base = base
     end
@@ -93,9 +93,9 @@ module Arrest
     def put(context, rest_resource)
       raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       hash = rest_resource.to_jhash
+      insert_nulls!(rest_resource,hash)
       hash.delete(:id)
       hash.delete("id")
-      insert_nulls!(rest_resource,hash)
       body = JSON.generate(hash)
 
       internal_put(rest_resource, rest_resource.resource_location, body)

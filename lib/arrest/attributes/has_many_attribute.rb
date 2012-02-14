@@ -1,4 +1,5 @@
 module Arrest
+
   class HasManyAttribute < Attribute
     attr_reader :method_name, :clazz_name, :url_part, :foreign_key
     def initialize(ids_field_name,

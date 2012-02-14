@@ -27,7 +27,7 @@ class FirstTest < Test::Unit::TestCase
   def test_create
     zoo_count_before = @scope.Zoo.all.length
     new_zoo = @scope.Zoo.new({:name => "Foo"})
-    assert_equal "Foo", new_zoo.name 
+    assert_equal "Foo", new_zoo.name
     assert new_zoo.save, new_zoo.errors.full_messages.to_s
     zoo_count_after = @scope.Zoo.all.length
     assert_not_nil new_zoo.id
@@ -636,7 +636,7 @@ class FirstTest < Test::Unit::TestCase
     assert_equal zoo1.name, zoo2.name
   end
 
-  def test_unset_porperty
+  def test_unset_property
     # just taking a class that has a not mandatory attribute
     zo = @scope.ZooOwner.new({ :name => 'meeeee' })
     assert zo.save
@@ -647,4 +647,3 @@ class FirstTest < Test::Unit::TestCase
     assert_nil zo.name, "Name should be unset"
   end
 end
-

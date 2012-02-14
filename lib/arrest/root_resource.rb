@@ -16,7 +16,7 @@ module Arrest
         end
         body ||= []
         body.map do |h|
-          self.build h
+          self.build(context, h)
         end
       end
 
@@ -37,9 +37,7 @@ module Arrest
         end
         body ||= []
         body.map do |h|
-          obj = self.build h
-          obj.context = context
-          obj
+          self.build(context, h)
         end
       end
 
@@ -50,9 +48,7 @@ module Arrest
           Arrest::logger.info "DocumentNotFoundError for #{self.resource_path}"
           raise Errors::DocumentNotFoundError.new
         end
-        res = self.build(body)
-        res.context = context
-        res
+        self.build(context, body)
       end
 
       def find(context, id)
@@ -66,12 +62,7 @@ module Arrest
           Arrest::logger.info "DocumentNotFoundError for #{self.resource_path}/#{id}"
           raise Errors::DocumentNotFoundError.new
         end
-        resource = self.build body.merge({:id => id})
-        # traverse fields for subresources and fill them in
-        self.all_fields.find_all{|f| f.is_a?(HasManySubResourceAttribute)}.each do |attr|
-          ids = AbstractResource::source.get_many_other_ids(context, "#{resource.resource_location}/#{attr.sub_resource_field_name}")
-          resource.send("#{attr.name}=", body_root(ids))
-        end
+        resource = self.build(context, body.merge({:id => id}))
         resource
       end
 
@@ -120,7 +111,7 @@ module Arrest
         else
           send :define_singleton_method, name do |context|
             body_root(source().get_many(context, self.scoped_path(name))).map do |h|
-              self.build(h)
+              self.build(context, h)
             end
           end
         end

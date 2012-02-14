@@ -64,5 +64,47 @@ class HasAttributesTest < Test::Unit::TestCase
     assert_equal 'foo42', h[:id]
   end
 
+  class GotMe < Arrest::RootResource
+  end
+  # for dirty tracking of attributes we need class to be a resource (which includes ActiveModel::Dirty)
+  class ItHasResource < Arrest::RootResource
+    attribute :name, String
+    has_many :got_mes, :sub_resource => true
+  end
+
+  def test_dirty_attribute
+    Arrest::Source.source = nil
+    Arrest::Source.skip_validations = false
+
+    ih = ItHasResource.new({:name => "Bla"})
+    ih.save
+    assert !ih.got_me_ids_changed?
+    assert !ih.changed?
+
+    ih.got_me_ids = ["huhu"]
+    assert ih.got_me_ids_changed?
+    assert ih.changed?
+    ih.save
+
+    assert !ih.got_me_ids_changed?
+    assert !ih.changed?
+
+    ih.got_me_ids = ["huhu"]
+    assert !ih.got_me_ids_changed?
+    assert !ih.changed?
+  end
+
+  def test_dirty_with_reload
+    Arrest::Source.source = nil
+    Arrest::Source.skip_validations = false
+    @scope = Arrest::ScopedRoot.new
+
+    ih = @scope.ItHasResource.new({:name => "Bla", :got_me_ids => ["BistDuEinRuede?"]})
+    ih.save
+
+    ih.reload
+    assert_equal "Bla", ih.name
+    assert_equal ["BistDuEinRuede?"], ih.got_me_ids
+  end
 end
 
