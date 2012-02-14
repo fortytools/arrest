@@ -89,18 +89,6 @@ module Arrest
         end
       end
 
-      def filters
-        @filters
-      end
-
-      def all_filters
-        all_filters = @filters
-        all_filters ||= []
-        if superclass.respond_to?('filters') && superclass.filters
-          all_fields += superclass.filters
-        end
-        all_filters
-      end
 
       def scope name, &block
         super(name)

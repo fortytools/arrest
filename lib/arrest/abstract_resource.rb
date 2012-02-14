@@ -19,9 +19,26 @@ module Arrest
     end
 
     def self.register_resource(clazz)
+      @classes ||= []
+      @classes << clazz
       send :define_method, ClassUtils.simple_name(clazz) do ||
         proxy = clazz.mk_proxy(self)
-        proxy
+      proxy
+      end
+    end
+
+    def self.registered_classes
+      @classes ||= []
+      @classes
+    end
+
+    def delete_all
+      self.class.registered_classes.each do |clazz|
+        begin
+          clazz.delete_all(@context)
+        rescue
+          puts "couldnt delete #{clazz.name}s"
+        end
       end
     end
 
@@ -104,11 +121,11 @@ module Arrest
       end
 
       def resource_name
-       if @custom_resource_name
-         @custom_resource_name
-       else
-         StringUtils.plural(self.name.sub(/.*:/,'').downcase)
-       end
+        if @custom_resource_name
+          @custom_resource_name
+        else
+          StringUtils.plural(self.name.sub(/.*:/,'').downcase)
+        end
       end
 
       def has_many(*args)
@@ -207,6 +224,19 @@ module Arrest
           self.send :attr_accessor,name
           add_attribute(Attribute.new(name, true, clazz))
         end
+      end
+
+      def filters
+        @filters
+      end
+
+      def all_filters
+        all_filters = @filters
+        all_filters ||= []
+        if superclass.respond_to?('filters') && superclass.filters
+          all_fields += superclass.filters
+        end
+        all_filters
       end
     end
 
