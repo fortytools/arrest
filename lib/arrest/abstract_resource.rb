@@ -55,7 +55,7 @@ module Arrest
     include ActiveModel::Validations
     include ActiveModel::Conversion
     include HasAttributes
-    attribute :id, String, {:read_only => true}
+    attribute :id, String
 
     attr_accessor :context
 
