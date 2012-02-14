@@ -610,8 +610,41 @@ class FirstTest < Test::Unit::TestCase
 
   def test_update_attribute
     zoo1 = @scope.Zoo.new(:name => 'zoo1')
+    assert zoo1.save
     zoo1.update_attributes({:name => "updated"})
     assert_equal "updated", zoo1.name
+
+    zoo_reloaded = @scope.Zoo.find(zoo1.id)
+    assert_equal "updated", zoo_reloaded.name
+
+  end
+
+  def test_reload
+    zoo1 = @scope.Zoo.new(:name => 'zoo1')
+    assert zoo1.save
+
+    zoo2 = @scope.Zoo.find(zoo1.id)
+    assert zoo2.save
+
+    zoo1.name = "updated"
+    assert zoo1.save
+
+    assert_not_equal zoo1.name, zoo2.name
+
+    zoo2.reload
+
+    assert_equal zoo1.name, zoo2.name
+  end
+
+  def test_unset_porperty
+    # just taking a class that has a not mandatory attribute
+    zo = @scope.ZooOwner.new({ :name => 'meeeee' })
+    assert zo.save
+
+    zo.name = nil
+    assert zo.save
+
+    assert_nil zo.name, "Name should be unset"
   end
 end
 

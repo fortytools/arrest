@@ -1,5 +1,19 @@
 require "arrest/source"
 module Arrest
+
+
+  class Null
+    @@NULL = Null.new()
+
+    def self.singleton
+      @@NULL
+    end
+
+    def to_json(*a)
+      'null'
+    end
+  end
+
   module HasAttributes
     attr_accessor :attribute_values
 
@@ -47,7 +61,7 @@ module Arrest
       end
     end
 
-    def update_attributes attribute_hash
+    def attributes=(attribute_hash = {})
       fields = self.class.all_fields
       field_names = fields.map(&:name)
       attribute_hash.each_pair do |k,v|
@@ -58,7 +72,16 @@ module Arrest
           self.send("#{k}=", converted)
         end
       end
+    end
+
+    def update_attributes(attribute_hash = {})
+      self.attributes= attribute_hash
       self.save
+    end
+
+    def reload
+      hash = self.class.find(self.context, self.id).to_hash
+      self.attributes= hash
     end
 
     def load_from_stub

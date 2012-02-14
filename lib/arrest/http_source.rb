@@ -88,7 +88,8 @@ module Arrest
       hash = rest_resource.to_jhash
       hash.delete(:id)
       hash.delete("id")
-      body = hash.to_json
+      insert_nulls!(rest_resource,hash)
+      body = JSON.generate(hash)
 
       internal_put(rest_resource, rest_resource.resource_location, body)
     end
@@ -111,6 +112,14 @@ module Arrest
       response.env[:status] == 200
     end
 
+    def insert_nulls!(rest_resource, hash)
+      rest_resource.class.all_fields.each do |field|
+        if !field.read_only && hash[field.json_name] == nil
+          hash[field.json_name] = Null.singleton
+        end
+      end
+    end
+
     def post(context, rest_resource)
       raise "new object must have setter for id" unless rest_resource.respond_to?(:id=)
       raise "new object must not have id" if rest_resource.respond_to?(:id) && rest_resource.id != nil
@@ -118,9 +127,9 @@ module Arrest
       hash.delete(:id)
       hash.delete('id')
 
-      hash.delete_if{|k,v| v == nil}
+      insert_nulls!(rest_resource,hash)
 
-      body = hash.to_json
+      body = JSON.generate(hash)
       response = self.connection().post do |req|
         req.url rest_resource.resource_path
         add_headers(context, req.headers)
