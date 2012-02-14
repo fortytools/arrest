@@ -163,12 +163,14 @@ module Arrest
         res
       end
 
-      def nested name, clazz
-        add_attribute NestedAttribute.new(name, false, clazz)
+      def nested name, clazz, options = {}
+        read_only = !!options[:read_only]
+        add_attribute NestedAttribute.new(name, read_only, clazz)
       end
 
-      def nested_array name, clazz
-        add_attribute NestedCollection.new(name, false, clazz)
+      def nested_array name, clazz, options = {}
+        read_only = !!options[:read_only]
+        add_attribute NestedCollection.new(name, read_only, clazz)
       end
     end
 

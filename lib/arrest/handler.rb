@@ -2,7 +2,7 @@ require 'arrest/string_utils'
 
 module Arrest
 
-  RequestLog = Struct.new(:method, :url, :body)
+  RequestLog = Struct.new(:method, :url, :body, :headers)
   ResponseLog = Struct.new(:status, :body)
   CallLog = Struct.new(:request, :response)
 

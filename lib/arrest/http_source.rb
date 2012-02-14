@@ -5,6 +5,8 @@ module Arrest
 
   class HttpSource
 
+    attr_reader :base
+    
     def initialize base
       @base = base
     end
@@ -20,14 +22,16 @@ module Arrest
       hds.each_pair do |k,v|
         headers[k.to_s] = v.to_s
       end
+      hds
     end
 
     def get_one(context, sub, filter={})
+      headers = nil
       response = self.connection().get do |req|
         req.url(sub, filter)
-        add_headers(context, req.headers)
+        headers = add_headers(context, req.headers)
       end
-      rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil)
+      rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil, headers)
       rsl = ResponseLog.new(response.env[:status], response.body)
       Arrest::Source.call_logger.log(rql, rsl)
       if response.env[:status] != 200
@@ -41,11 +45,12 @@ module Arrest
     end
 
     def get_many(context, sub, filter={})
+      headers = nil
       response = self.connection().get do |req|
         req.url(sub, filter)
-        add_headers(context, req.headers)
+        headers = add_headers(context, req.headers)
       end
-      rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil)
+      rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil, headers)
       rsl = ResponseLog.new(response.env[:status], response.body)
       Arrest::Source.call_logger.log(rql, rsl)
       response.body
@@ -53,11 +58,12 @@ module Arrest
 
 
     def delete_all(context, resource_path)
-        response = self.connection().delete do |req|
+      headers = nil
+      response = self.connection().delete do |req|
         req.url(resource_path)
-        add_headers(context, req.headers)
+        headers = add_headers(context, req.headers)
       end
-      rql = RequestLog.new(:delete, "#{resource_path}", nil)
+      rql = RequestLog.new(:delete, "#{resource_path}", nil, headers)
       rsl = ResponseLog.new(response.env[:status], response.body)
       Arrest::Source.call_logger.log(rql, rsl)
 
@@ -66,11 +72,12 @@ module Arrest
 
     def delete(context, rest_resource)
       raise "To delete an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
+      headers = nil
       response = self.connection().delete do |req|
         req.url(rest_resource.resource_location)
-        add_headers(context, req.headers)
+        headers = add_headers(context, req.headers)
       end
-      rql = RequestLog.new(:delete, rest_resource.resource_location, nil)
+      rql = RequestLog.new(:delete, rest_resource.resource_location, nil, headers)
       rsl = ResponseLog.new(response.env[:status], response.body)
       Arrest::Source.call_logger.log(rql, rsl)
       response.env[:status] == 200
@@ -98,12 +105,13 @@ module Arrest
 
 
     def internal_put(rest_resource, location, body)
+      headers = nil
       response = self.connection().put do |req|
         req.url(location)
-        add_headers(rest_resource.context, req.headers)
+        headers = add_headers(rest_resource.context, req.headers)
         req.body = body
       end
-      rql = RequestLog.new(:put, location, body)
+      rql = RequestLog.new(:put, location, body, headers)
       rsl = ResponseLog.new(response.env[:status], response.body)
       Arrest::Source.call_logger.log(rql, rsl)
       if response.env[:status] != 200
@@ -130,12 +138,13 @@ module Arrest
       insert_nulls!(rest_resource,hash)
 
       body = JSON.generate(hash)
+      headers = nil
       response = self.connection().post do |req|
         req.url rest_resource.resource_path
-        add_headers(context, req.headers)
+        headers = add_headers(context, req.headers)
         req.body = body
       end
-      rql = RequestLog.new(:post, rest_resource.resource_path, body)
+      rql = RequestLog.new(:post, rest_resource.resource_path, body, headers)
       rsl = ResponseLog.new(response.env[:status], response.body)
       Arrest::Source.call_logger.log(rql, rsl)
       if (response.env[:status] == 201)
