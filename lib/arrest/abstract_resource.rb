@@ -42,7 +42,7 @@ module Arrest
       params += args.drop(1)
       @resource.send(args.first, *params)
     end
-    
+
     def load(*args)
       ext = [@context_provider.get_context] + args
       @resource.load(*ext)
@@ -110,11 +110,13 @@ module Arrest
         clazz_name = StringUtils.singular(method_name.to_s)
         foreign_key = clazz_name + "_id"
         sub_resource = false
+        read_only = false
         if options
           clazz_name = options[:class_name].to_s unless options[:class_name] == nil
           foreign_key = "#{StringUtils.underscore(clazz_name)}_id"
           foreign_key = options[:foreign_key].to_s unless options[:foreign_key] == nil
           sub_resource = !!options[:sub_resource]
+          read_only = options[:read_only]
         end
 
         url_part = method_name.to_s
@@ -124,7 +126,8 @@ module Arrest
                                             method_name,
                                             clazz_name,
                                             url_part,
-                                            foreign_key)
+                                            foreign_key,
+                                            read_only)
         add_attribute(hm_attr)
 
         send :define_method, method_name do # e.g. define 'teams' method for notation 'has_many :teams'
@@ -135,7 +138,7 @@ module Arrest
       end
 
       def create_has_many_attribute(sub_resource, ids_field_name, method_name,
-                                    clazz_name, url_part, foreign_key)
+                                    clazz_name, url_part, foreign_key, read_only)
         if sub_resource
           HasManySubResourceAttribute.new(ids_field_name,
                                           method_name,
@@ -147,7 +150,8 @@ module Arrest
                                method_name,
                                clazz_name,
                                url_part,
-                               foreign_key)
+                               foreign_key,
+                               read_only)
         end
       end
 
@@ -217,7 +221,7 @@ module Arrest
           self.class.all_fields.find_all{|f| f.is_a?(HasManySubResourceAttribute)}.each do |attr|
             ids = self.send(attr.name) # get ids_field e.g. for team has_many :users get 'self.user_ids'
             srifn = attr.sub_resource_field_name
-            result = !!AbstractResource::source.put_sub_resource( self, srifn, ids)
+            result = !!AbstractResource::source.put_sub_resource(self, srifn, ids)
             return false if !result
           end
           return true
