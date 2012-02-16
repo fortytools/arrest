@@ -7,7 +7,7 @@ module Arrest
     end
 
     def build attributes = {}
-      resolved_class.new @parent, attributes
+      resolved_class.new(@parent.context, @parent, attributes)
     end
 
     def method_missing(*args, &block)
@@ -29,7 +29,7 @@ module Arrest
 
     def children
       if @children == nil
-        @children = resolved_class.all_for @parent
+        @children = resolved_class.all_for(@parent)
       end
       @children
     end
