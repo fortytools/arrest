@@ -89,16 +89,16 @@ module Arrest
         end
       end
 
-
-      def scope name, &block
-        super(name)
+      def scope name, options = {}, &block
+        super(name, options)
         if block_given?
           send :define_singleton_method, name do |context|
             self.all(context).select(&block)
           end
         else
           send :define_singleton_method, name do |context|
-            body_root(source().get_many(context, self.scoped_path(name))).map do |h|
+            resource_name = options[:resource_name] || name
+            body_root(source().get_many(context, self.scoped_path(resource_name))).map do |h|
               self.build(context, h)
             end
           end

@@ -3,7 +3,7 @@ require 'arrest/string_utils'
 require 'time'
 require 'active_model'
 
-Scope = Struct.new(:name, :block)
+Scope = Struct.new(:name, :options, :block)
 
 module Arrest
 
@@ -211,11 +211,11 @@ module Arrest
       end
 
 
-      def scope(name, &block)
+      def scope(name, options = {}, &block)
         if @scopes == nil
           @scopes = []
         end
-        @scopes << Scope.new(name, &block)
+        @scopes << Scope.new(name, options, &block)
       end
 
 
