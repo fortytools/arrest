@@ -124,7 +124,9 @@ module Arrest
         if @custom_resource_name
           @custom_resource_name
         else
-          StringUtils.plural(self.name.sub(/.*:/,'').downcase)
+          simple_name = ClassUtils.simple_name(self)
+          usd_name = StringUtils.underscore(simple_name)
+          StringUtils.plural(usd_name)
         end
       end
 
