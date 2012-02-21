@@ -277,6 +277,10 @@ module Arrest
       false
     end
 
+    def save!
+      raise self.errors.inspect unless self.save
+    end
+
     def new_record?
       [nil, ''].include?(id)
     end
