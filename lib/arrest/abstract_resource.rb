@@ -172,7 +172,8 @@ module Arrest
                                                  method_name,
                                                  clazz_name,
                                                  url_part,
-                                                 foreign_key)
+                                                 foreign_key,
+                                                 read_only)
         else
           return HasManyAttribute.new(ids_field_name,
                                       method_name,
@@ -263,7 +264,7 @@ module Arrest
         if success
           # check for sub resources in case of n:m relationships
           self.class.all_fields.find_all{|f| f.is_a?(HasManySubResourceAttribute)}.each do |attr|
-            if self.send("#{attr.name}_changed?") # check whether this 'subresource' attribute has been touched
+            if !attr.sub_resource_read_only? && self.send("#{attr.name}_changed?") # check whether this 'subresource' attribute has been touched
               ids = self.send(attr.name) # get ids_field e.g. for team has_many :users get 'self.user_ids'
               srifn = attr.sub_resource_field_name
               result = !!AbstractResource::source.put_sub_resource(self, srifn, ids)
