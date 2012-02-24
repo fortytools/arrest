@@ -122,7 +122,8 @@ module Arrest
 
     def insert_nulls!(rest_resource, hash)
       rest_resource.class.all_fields.each do |field|
-        if !field.read_only && hash[field.json_name] == nil
+        changed = (!rest_resource.respond_to?("#{field.name}_changed?" || rest_resource.send("#{field}_changed?")))
+        if !field.read_only && hash[field.json_name] == nil && changed
           hash[field.json_name] = Null.singleton
         end
       end
