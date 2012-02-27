@@ -80,6 +80,9 @@ module Arrest
       rql = RequestLog.new(:delete, rest_resource.resource_location, nil, headers)
       rsl = ResponseLog.new(response.env[:status], response.body)
       Arrest::Source.call_logger.log(rql, rsl)
+      if response.env[:status] != 200
+        handle_errors(rest_resource, response.body, response.env[:status])
+      end
       response.env[:status] == 200
     end
 

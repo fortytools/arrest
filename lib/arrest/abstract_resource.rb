@@ -288,7 +288,6 @@ module Arrest
 
     def delete
       AbstractResource::source().delete(@context, self)
-      true
     end
 
     # convenience method printing curl command
