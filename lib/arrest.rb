@@ -26,5 +26,6 @@ require "arrest/source"
 require "arrest/abstract_resource"
 require "arrest/nested_resource"
 require "arrest/root_resource"
+require "arrest/single_resource"
 require "arrest/rest_child"
 
