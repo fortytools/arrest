@@ -361,6 +361,25 @@ class FirstTest < Test::Unit::TestCase
     assert_equal "Foo1", v1_reloaded.zoos.first.name
   end
 
+  def test_has_many_with_reload
+    @scope.Zoo.new(:name => "Foo1").save
+    @scope.Zoo.new(:name => "Foo2").save
+    assert_equal 2, @scope.Zoo.all.length
+    all_zoo_ids = @scope.Zoo.all.map(&:id)
+    v1 = @scope.ZooOwner.new({:name => "Foo", :zoo_ids => all_zoo_ids})
+    v1.save
+
+    zoo_id = @scope.Zoo.all.first.id
+    v2 = @scope.ZooOwner.all.first
+    v2.zoo_ids = [zoo_id]
+    v2.save
+
+    v1.reload
+    assert_equal 1, v1.zoo_ids.length
+    assert_equal 1, v1.zoos.length
+    assert_equal zoo_id, v1.zoos.first.id
+  end
+
   def test_build
     v1 = @scope.ZooOwner.new({:name => "Foo"})
     v1.save

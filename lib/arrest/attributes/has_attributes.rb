@@ -88,11 +88,6 @@ module Arrest
       self.save
     end
 
-    def reload
-      hash = self.class.find(self.context, self.id).to_hash
-      self.attributes= hash
-    end
-
     def load_from_stub
       @load_blk.call
       @stubbed = false
@@ -192,5 +187,12 @@ module Arrest
     def stubbed?
       @stubbed
     end
+
+    protected
+    def internal_reload
+      hash = self.class.find(self.context, self.id).to_hash
+      self.attributes= hash
+    end
+
   end
 end

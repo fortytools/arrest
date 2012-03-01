@@ -282,6 +282,11 @@ module Arrest
       raise self.errors.inspect unless self.save
     end
 
+    def reload
+      @has_many_collections = {}
+      internal_reload
+    end
+
     def new_record?
       [nil, ''].include?(id)
     end
