@@ -197,13 +197,8 @@ module Arrest
         end
 
         send :define_method, method_name do
-          if @child_collections == nil
-            @child_collections = {}
-          end
-          if @child_collections[method_name] == nil
-            @child_collections[method_name]  = ChildCollection.new(self, (StringUtils.classify (StringUtils.singular clazz_name)))
-          end
-
+          @child_collections ||= {}
+          @child_collections[method_name] ||= ChildCollection.new(self, (StringUtils.classify (StringUtils.singular clazz_name)))
           @child_collections[method_name]
         end
       end
@@ -212,7 +207,6 @@ module Arrest
         method_name = args[0].to_s.to_sym
         class_eval "def #{method_name}; self.parent; end"
       end
-
 
       def scope(name, options = {}, &block)
         if @scopes == nil
@@ -284,7 +278,9 @@ module Arrest
 
     def reload
       @has_many_collections = {}
-      internal_reload
+      @child_collections = {}
+      hash = internal_reload
+      self.attributes= hash
     end
 
     def new_record?

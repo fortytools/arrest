@@ -16,10 +16,9 @@ module Arrest
         (resource_path_for parent) + '/' + scope_name.to_s
       end
 
-      def build parent, hash
+      def build(parent, hash)
         self.new(parent.context, parent, hash)
       end
-
 
       def all_for(parent)
         raise "Parent has no id yet" unless parent.id
@@ -36,10 +35,10 @@ module Arrest
         raise "find cannot be executed for child resources - use find_for with a parent"
       end
 
-      def find_for(context, parent,id)
+      def find_for(context, parent, id)
         r = source().get_one(context, "#{self.resource_path_for(parent)}/#{id}")
         body = body_root(r)
-        self.build(body)
+        self.build(parent, body)
       end
 
       def filter name, &aproc
@@ -58,7 +57,7 @@ module Arrest
         super name
         if block_given?
           send :define_singleton_method, name do |parent|
-            self.all_for(parent).select &block 
+            self.all_for(parent).select &block
           end
         else
           send :define_singleton_method, name do |parent|
@@ -87,7 +86,12 @@ module Arrest
       raise "stubbing for child resource isnt supported yet"
     end
 
-
+    protected
+    def internal_reload
+      @parent.reload
+      self.class.find_for(self.context, self.parent, self.id).to_hash
+    end
   end
 end
+
 

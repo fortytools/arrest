@@ -111,7 +111,6 @@ module Arrest
         n
       end
 
-
       def delete_all(context)
         source().delete_all(context, self.resource_path)
       end
@@ -125,6 +124,10 @@ module Arrest
       self.class.resource_path + '/' + self.id.to_s
     end
 
+    protected
+    def internal_reload
+      self.class.find(self.context, self.id).to_hash
+    end
   end
 end
 

@@ -188,11 +188,5 @@ module Arrest
       @stubbed
     end
 
-    protected
-    def internal_reload
-      hash = self.class.find(self.context, self.id).to_hash
-      self.attributes= hash
-    end
-
   end
 end
