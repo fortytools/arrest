@@ -1,35 +1,27 @@
 module Arrest
-  class HasManyCollection #< BasicObject
+  class OrderedCollection #< BasicObject
 
-    def initialize(parent, has_many_attribute)
-      @parent = parent
-      @clazz_name = (StringUtils.classify(has_many_attribute.clazz_name.to_s))
-      @url_part = has_many_attribute.url_part
-      @children = nil
-      @foreign_key_name = (StringUtils.underscore(@parent.class.name).gsub(/^.*\//, '') + '_id').to_sym
-      define_filters
-      @attribute = has_many_attribute
+    def initialize(context,class_or_class_name, base_url)
+      @context = context
+      if class_or_class_name.is_a?(String) || class_or_class_name.is_a?(Symbol)
+        @clazz_name = (StringUtils.classify(class_name.to_s))
+      else
+        @clazz = class_or_class_name
+      end
+      @base_url = base_url
+      @collection = nil
       @page = 1
       @page_size = nil
       @per_page = 5
     end
 
-    def build attributes = {}
-      extended_attrs = attributes.merge({@foreign_key_name => @parent.id})
-      resolved_class.new(@parent.context, extended_attrs)
-    end
-
     def method_missing(*args, &block)
-       children.send(*args, &block)
-    end
-
-    def inspect
-      children.inspect
+       collection.send(*args, &block)
     end
 
     def limit(count)
       if count != @page_size
-        @children = nil
+        @collection = nil
       end
       @page_size = count
       self
@@ -42,14 +34,14 @@ module Arrest
         new_page = 1
       end
       if new_page != @page 
-        @children = nil
+        @collection = nil
       end
       @page = new_page
       self
     end
 
     def total_count
-      children() # make sure request was made before
+      collection() # make sure request was made before
       @total_count
     end
 
@@ -96,7 +88,7 @@ module Arrest
     def page(num)
       num ||= 1
       if @page_size != @per_page || @page != num
-        @children = nil
+        @collection = nil
       end
       @page_size = @per_page
       @page = num.to_i
@@ -105,38 +97,23 @@ module Arrest
 
     private
 
-    def children
-      if @children == nil
+    def collection
+      if @collection == nil
         if @page_size
           query_params = "?pageSize=#{@page_size}&page=#{@page}"
         else
           query_params = ''
         end
-        url = @parent.resource_location + '/' + @url_part.to_s + query_params
-        response = resolved_class.by_url(@parent.context, url)
+        url = @base_url + '/' + @url_part.to_s + query_params
+        response = resolved_class.by_url(@context, url)
         @total_count = response[:result_count]
-        @children = response[:collection]
+        @collection = response[:collection]
       end
-      @children
+      @collection
     end
 
     def resolved_class
-      if @clazz == nil
-        @clazz = Source.mod.const_get(@clazz_name)
-      end
-      @clazz
-    end
-
-
-    def define_filters
-      resolved_class.all_filters.each do |filter|
-        self.instance_eval <<-"end_eval"
-          def #{filter.name} *args
-            real_args = [children] + args
-            #{resolved_class.name}.FILTER_#{filter.name}(real_args)
-          end
-        end_eval
-      end
+      @clazz ||= Source.mod.const_get(@clazz_name)
     end
 
   end

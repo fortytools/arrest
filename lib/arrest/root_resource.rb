@@ -7,17 +7,26 @@ module Arrest
         "#{self.resource_name}"
       end
 
+      # Rertrieves a collection of objects and returns them
+      # in a hash combined with metadata
       def by_url(context, url)
         begin
-          body = body_root(source().get_many(context, url))
+          response = source().get_many(context, url)
+          parsed_hash = JSON.parse(response)
+          result_count = parsed_hash['result_count']
+          body = body_root(response)
         rescue Arrest::Errors::DocumentNotFoundError
           Arrest::logger.info "DocumentNotFoundError for #{url} gracefully returning []"
           return []
         end
         body ||= []
-        body.map do |h|
+        collection = body.map do |h|
           self.build(context, h)
         end
+        {
+          :result_count => result_count,
+          :collection => collection
+        }
       end
 
       def first(context, filter={})
@@ -41,6 +50,32 @@ module Arrest
         end
       end
 
+      # ========================================================
+      # Methods for pagination
+        def limit_value #:nodoc:
+          query.options[:limit] || 0
+        end
+
+        def offset_value #:nodoc:
+          query.options[:offset] || 0
+        end
+
+        def total_count(context, filter = {}) #:nodoc:
+          begin
+            response = source().get_many(context, self.resource_path, filter)
+            all = JSON.parse(response)
+            all['result_count'].to_i
+          rescue Arrest::Errors::DocumentNotFoundError
+            Arrest::logger.info "DocumentNotFoundError for #{self.resource_path} gracefully returning []"
+            return 0
+          end
+        end
+          
+
+        def current_page_count #:nodoc:
+          count
+        end
+      # ========================================================
 
       def find(context, id)
         if id == nil || "" == id
@@ -89,9 +124,7 @@ module Arrest
         else
           send :define_singleton_method, name do |context|
             resource_name = options[:resource_name] || name
-            body_root(source().get_many(context, self.scoped_path(resource_name))).map do |h|
-              self.build(context, h)
-            end
+            Arrest::OrderedCollection.new(context, self, self.scoped_path(resource_name))
           end
         end
 
