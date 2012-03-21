@@ -71,6 +71,7 @@ module Arrest
     include ActiveModel::Validations
     include ActiveModel::Conversion
     include ActiveModel::Dirty
+    extend ActiveModel::Translation
     include HasAttributes
     attribute :id, String
 
