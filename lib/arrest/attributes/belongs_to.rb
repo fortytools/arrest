@@ -51,7 +51,7 @@ module Arrest
 
           begin
             if polymorphic
-              Arrest::Source.mod.const_get(polymorphic[val.type.to_sym]).find(self.context, val.id)
+              Arrest::Source.mod.const_get(polymorphic[val.ref_type.to_sym]).find(self.context, val.ref_id)
             else
               Arrest::Source.mod.const_get(class_name).find(self.context, val)
             end

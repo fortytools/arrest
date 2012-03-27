@@ -444,7 +444,7 @@ class FirstTest < Test::Unit::TestCase
     comc.save
 
     c = @scope.ExtendedComment.new({ :special_commentable_ref => { :ref_id => comc.id, :ref_type => "comc"},
-                              :commentable_ref => { :ref_id => coma.id, :ref_type => "coma" }})
+                                     :commentable_ref => { :ref_id => coma.id, :ref_type => "coma" }})
     assert_equal c.commentable.class, CommentableA
     assert_equal c.other_commentable.class, CommentableC
 
