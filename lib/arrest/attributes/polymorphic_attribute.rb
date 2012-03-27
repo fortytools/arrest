@@ -1,11 +1,11 @@
 module Arrest
   class Ref
     include HasAttributes
-    
-    attribute :id, String
-    attribute :type, String
+
+    attribute :ref_id, String
+    attribute :ref_type, String
   end
-  
+
   class PolymorphicAttribute < NestedAttribute
     def initialize name, read_only
       super name, read_only, Ref

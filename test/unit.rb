@@ -426,14 +426,14 @@ class FirstTest < Test::Unit::TestCase
     comb = @scope.CommentableB.new()
     comb.save
 
-    c = @scope.Comment.new(:commentable_ref => { :id => coma.id, :type => "coma"})
+    c = @scope.Comment.new(:commentable_ref => { :ref_id => coma.id, :ref_type => "coma"})
     result = c.commentable
-    assert_equal coma.id, c.commentable_ref.id
+    assert_equal coma.id, c.commentable_ref.ref_id
     assert_equal result.class, CommentableA
 
-    c2 = @scope.Comment.new(:commentable_ref => { :id => comb.id, :type => "comb"})
+    c2 = @scope.Comment.new(:commentable_ref => { :ref_id => comb.id, :ref_type => "comb"})
     result2 = c2.commentable
-    assert_equal comb.id, c2.commentable_ref.id
+    assert_equal comb.id, c2.commentable_ref.ref_id
     assert_equal result2.class, CommentableB
   end
 
@@ -443,14 +443,14 @@ class FirstTest < Test::Unit::TestCase
     comc = @scope.CommentableC.new()
     comc.save
 
-    c = @scope.ExtendedComment.new({ :special_commentable_ref => { :id => comc.id, :type => "comc"},
-                              :commentable_ref => { :id => coma.id, :type => "coma" }})
+    c = @scope.ExtendedComment.new({ :special_commentable_ref => { :ref_id => comc.id, :ref_type => "comc"},
+                              :commentable_ref => { :ref_id => coma.id, :ref_type => "coma" }})
     assert_equal c.commentable.class, CommentableA
     assert_equal c.other_commentable.class, CommentableC
 
     c.save
     c_reloaded = @scope.ExtendedComment.find(c.id)
-    assert_equal comc.id, c_reloaded.special_commentable_ref.id
+    assert_equal comc.id, c_reloaded.special_commentable_ref.ref_id
     assert_equal CommentableC, c_reloaded.other_commentable.class
     assert_equal CommentableA, c_reloaded.commentable.class
   end
