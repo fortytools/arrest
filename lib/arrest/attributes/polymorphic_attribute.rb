@@ -2,8 +2,8 @@ module Arrest
   class Ref
     include HasAttributes
 
-    attribute :ref_id, String
-    attribute :ref_type, String
+    attribute :id, String
+    attribute :type, String
   end
 
   class PolymorphicAttribute < NestedAttribute
