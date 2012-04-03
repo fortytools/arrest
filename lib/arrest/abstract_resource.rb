@@ -139,15 +139,15 @@ module Arrest
         foreign_key = clazz_name + "_id"
         sub_resource = false
         read_only = false
+        url_part = method_name.to_s
         if options
           clazz_name = options[:class_name].to_s unless options[:class_name] == nil
           foreign_key = "#{StringUtils.underscore(clazz_name)}_id"
           foreign_key = options[:foreign_key].to_s unless options[:foreign_key] == nil
           sub_resource = !!options[:sub_resource]
           read_only = options[:read_only]
+          url_part = options[:url_part].to_s unless options[:url_part] == nil
         end
-
-        url_part = method_name.to_s
 
         hm_attr = create_has_many_attribute(sub_resource, # e.g. 'team_ids' attribute for 'has_many :teams'
                                             ids_field_name,
