@@ -70,7 +70,7 @@ module Arrest
             return 0
           end
         end
-          
+
 
         def current_page_count #:nodoc:
           count
@@ -131,7 +131,8 @@ module Arrest
       end
 
       def scoped_path scope_name
-        resource_path + '/' + scope_name.to_s
+        scope_name = scope_name.to_s
+        resource_path + (scope_name.start_with?('?') ? '' : '/') + scope_name
       end
 
       def stub(context, stub_id)

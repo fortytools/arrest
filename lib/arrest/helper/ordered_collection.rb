@@ -33,7 +33,7 @@ module Arrest
       else
         new_page = 1
       end
-      if new_page != @page 
+      if new_page != @page
         @collection = nil
       end
       @page = new_page
@@ -100,11 +100,11 @@ module Arrest
     def collection
       if @collection == nil
         if @page_size
-          query_params = "?pageSize=#{@page_size}&page=#{@page}"
+          query_params =  (@base_url.include?('?') ? '&' : '?') + "pageSize=#{@page_size}&page=#{@page}"
         else
           query_params = ''
         end
-        url = @base_url + '/' + @url_part.to_s + query_params
+        url = @base_url + query_params
         response = resolved_class.by_url(@context, url)
         @total_count = response[:result_count]
         @collection = response[:collection]
