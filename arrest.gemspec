@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   # specify any dependencies here; for example:
   # s.add_development_dependency "rspec"
   s.add_runtime_dependency "json"
-  s.add_runtime_dependency "faraday", '>= 0.8.0'
+  s.add_runtime_dependency "faraday", '>= 0.7.5'
   s.add_runtime_dependency "activemodel", '~> 3'
 
   s.add_development_dependency 'bundler', '>= 1.0.0'
