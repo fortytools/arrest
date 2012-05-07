@@ -85,6 +85,7 @@ class ValidationsTest < Test::Unit::TestCase
   def test_skip_validations
     Arrest::Source.skip_validations = true
     o0 = PresenceOfClass.new nil
+
     assert o0.valid? == false, "Foo is '#{o0.foo}' -> not present and thus not valid!"
     assert o0.save, "When skipping validations, in-mem-storage should work"
 

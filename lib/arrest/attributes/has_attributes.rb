@@ -67,7 +67,7 @@ module Arrest
     end
 
     def attributes
-      self.attribute_values
+      @attribute_values ||= {}
     end
 
     def attributes=(attribute_hash = {})
