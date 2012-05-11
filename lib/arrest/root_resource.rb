@@ -38,44 +38,8 @@ module Arrest
       end
 
       def all(context, filter={})
-        begin
-          body = body_root(source().get_many(context, self.resource_path, filter))
-        rescue Arrest::Errors::DocumentNotFoundError
-          Arrest::logger.info "DocumentNotFoundError for #{self.resource_path} gracefully returning []"
-          return []
-        end
-        body ||= []
-        body.map do |h|
-          self.build(context, h)
-        end
+        Arrest::OrderedCollection.new(context, self, self.resource_path)
       end
-
-      # ========================================================
-      # Methods for pagination
-        def limit_value #:nodoc:
-          query.options[:limit] || 0
-        end
-
-        def offset_value #:nodoc:
-          query.options[:offset] || 0
-        end
-
-        def total_count(context, filter = {}) #:nodoc:
-          begin
-            response = source().get_many(context, self.resource_path, filter)
-            all = JSON.parse(response)
-            all['result_count'].to_i
-          rescue Arrest::Errors::DocumentNotFoundError
-            Arrest::logger.info "DocumentNotFoundError for #{self.resource_path} gracefully returning []"
-            return 0
-          end
-        end
-
-
-        def current_page_count #:nodoc:
-          count
-        end
-      # ========================================================
 
       def find(context, id)
         if id == nil || "" == id
