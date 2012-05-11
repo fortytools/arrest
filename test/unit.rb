@@ -470,7 +470,7 @@ class FirstTest < Test::Unit::TestCase
 
     @scope.DeleteMeAll.delete_all
     all = @scope.DeleteMeAll.all
-    assert_equal [], all
+    assert all.empty?, "After deletion all entities should have been removed"
   end
 
   def test_update_belongs_to
