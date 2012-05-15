@@ -1,7 +1,8 @@
 module Arrest
   class OrderedCollection #< BasicObject
 
-    def initialize(context,class_or_class_name, base_url)
+    def initialize(context,class_or_class_name, base_url, filter = {})
+      @filter = filter
       @context = context
       if class_or_class_name.is_a?(String) || class_or_class_name.is_a?(Symbol)
         @clazz_name = (StringUtils.classify(class_name.to_s))
@@ -99,17 +100,24 @@ module Arrest
 
     def collection
       if @collection == nil
+        params = {}
         if @page_size
-          query_params =  (@base_url.include?('?') ? '&' : '?') + "pageSize=#{@page_size}&page=#{@page}"
-        else
-          query_params = ''
+          params[:pageSize] = @page_size
+          params[:page] = @page
         end
-        url = @base_url + query_params
+        params.merge!(@filter) # override with params that got passed in
+        url = build_url(@base_url, params)
         response = resolved_class.by_url(@context, url)
         @total_count = response[:result_count]
         @collection = response[:collection]
       end
       @collection
+    end
+
+    def build_url(base_url, params_hash)
+      query_str = (base_url.include?('?') ? '&' : '?') 
+      query_str += params_hash.map{|k,v| "#{k}=#{v}"}.join('&')
+      base_url + query_str
     end
 
     def resolved_class

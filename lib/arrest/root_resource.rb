@@ -38,7 +38,7 @@ module Arrest
       end
 
       def all(context, filter={})
-        Arrest::OrderedCollection.new(context, self, self.resource_path)
+        Arrest::OrderedCollection.new(context, self, self.resource_path, filter)
       end
 
       def find(context, id)
