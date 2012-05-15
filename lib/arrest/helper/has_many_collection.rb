@@ -1,8 +1,8 @@
 module Arrest
   class HasManyCollection #< BasicObject
 
-    def initialize(parent, has_many_attribute)
-      @parent = parent
+    def initialize(abstract_resource, has_many_attribute)
+      @parent = abstract_resource
       @clazz_name = (StringUtils.classify(has_many_attribute.clazz_name.to_s))
       @url_part = has_many_attribute.url_part
       @children = nil
@@ -41,7 +41,7 @@ module Arrest
       else
         new_page = 1
       end
-      if new_page != @page 
+      if new_page != @page
         @children = nil
       end
       @page = new_page
