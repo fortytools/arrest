@@ -115,6 +115,7 @@ module Arrest
     end
 
     def build_url(base_url, params_hash)
+      return base_url if params_hash.empty?
       query_str = (base_url.include?('?') ? '&' : '?') 
       query_str += params_hash.map{|k,v| "#{k}=#{v}"}.join('&')
       base_url + query_str
