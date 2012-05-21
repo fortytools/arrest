@@ -163,14 +163,8 @@ module Arrest
       end
 
       def all_fields
-        self_fields = self.fields
-        self_fields ||= []
-        if self.superclass.respond_to?('fields') && self.superclass.all_fields != nil
-          res = self_fields + self.superclass.all_fields
-        else
-          res = self_fields
-        end
-        res
+        @all_fields ||=
+          self.ancestors.select{|a| a.include?(HasAttributes)}.map(&:fields).flatten.reject{|f| f == nil}
       end
 
       def nested name, clazz, options = {}
