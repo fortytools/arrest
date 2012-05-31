@@ -10,6 +10,11 @@ module Arrest
 
     def from_hash(parent, value)
       return if value == nil
+
+      if @clazz.respond_to?(:convert)
+        return @clazz.convert(value)
+      end
+
       converter = CONVERTER[@clazz]
       if converter == nil
         puts "No converter for: #{@clazz.name}"
@@ -18,8 +23,14 @@ module Arrest
       converter.convert value
     end
 
+
     def to_hash value
       return nil unless value != nil
+
+      if @clazz.respond_to?(:mk_json)
+        return @clazz.mk_json(value)
+      end
+
       converter = CONVERTER[@clazz]
       if converter == nil
         puts "No converter for: #{@clazz.name}"

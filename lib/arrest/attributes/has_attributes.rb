@@ -148,8 +148,11 @@ module Arrest
           end
         else
           send :define_method, "#{attribute.name}=" do |v|
-            Arrest::debug "setter #{self.class.name} #{attribute.name} = #{v}"
-            self.attribute_values[attribute.name] = v
+            converted_v = convert(attribute, v)
+            Arrest::debug "setter #{self.class.name} #{attribute.name} = #{converted_v}"
+            self.attribute_values[attribute.name] = converted_v
+            #Arrest::debug "setter #{self.class.name} #{attribute.name} = #{v}"
+            #self.attribute_values[attribute.name] = v
           end
         end
 
@@ -174,13 +177,30 @@ module Arrest
 
       def nested_array name, clazz, options = {}
         read_only = !!options[:read_only]
-        add_attribute NestedCollection.new(name, read_only, clazz)
+        add_attribute Arrest::NestedCollection.new(name, read_only, clazz)
       end
     end
 
     def stubbed?
       @stubbed
     end
+
+    private
+      # attribute setter checks for proper conversion of v into attribute type
+      def convert(attribute, v)
+        clazz = attribute.clazz
+        # either as it is already the correct (||nested_array) type
+        if v == nil || v.is_a?(clazz) || (attribute.is_a?(Arrest::NestedCollection) && v.is_a?(Array))
+          converted_v = v
+        elsif clazz.respond_to?(:convert) # or its clazz implements a convert method
+          converted_v = clazz.convert(v)
+        elsif CONVERTER[clazz]            # or a converter has been registered in arrest
+          converted_v = CONVERTER[clazz].convert(v)
+        else                              # otherwise raise
+          raise ArgumentError, "Setting of attribute with type >#{clazz}< with value type >#{v.class}< failed."
+        end
+        converted_v
+      end
 
   end
 end
