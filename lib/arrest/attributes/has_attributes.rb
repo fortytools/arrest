@@ -192,6 +192,8 @@ module Arrest
         # either as it is already the correct (||nested_array) type
         if v == nil || v.is_a?(clazz) || (attribute.is_a?(Arrest::NestedCollection) && v.is_a?(Array))
           converted_v = v
+        elsif attribute.is_a?(Arrest::NestedAttribute) && v.is_a?(Hash) # a nested attribute needs a parent and a hash
+          converted_v = attribute.from_hash(self, v)
         elsif clazz.respond_to?(:convert) # or its clazz implements a convert method
           converted_v = clazz.convert(v)
         elsif CONVERTER[clazz]            # or a converter has been registered in arrest
