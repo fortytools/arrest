@@ -53,6 +53,13 @@ module Arrest
 
   class ArrayConv < IdentConv
     target Array
+
+    def self.mk_json value
+      if value == nil || value == ""
+        return nil
+      end
+      value
+    end
   end
 
   class TimeConv < Converter
