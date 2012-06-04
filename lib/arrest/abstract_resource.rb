@@ -74,6 +74,7 @@ module Arrest
     extend ActiveModel::Translation
     include HasAttributes
     include HasMany
+    include HasView
     attribute :id, String
 
     attr_accessor :context
@@ -227,6 +228,7 @@ module Arrest
     def reload
       @has_many_collections = {}
       @child_collections = {}
+      @views = {}
       hash = internal_reload
       self.attributes= hash
     end

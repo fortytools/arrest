@@ -7,7 +7,7 @@ module Arrest
         "#{self.resource_name}"
       end
 
-      # Rertrieves a collection of objects and returns them
+      # Retrieves a collection of objects and returns them
       # in a hash combined with metadata
       def by_url(context, url)
         begin
@@ -46,12 +46,15 @@ module Arrest
           Arrest::logger.info "DocumentNotFoundError: no id given"
           raise Errors::DocumentNotFoundError.new
         end
-        r = source().get_one(context, "#{self.resource_path}/#{id}")
+
+        full_resource_path = "#{self.resource_path}/#{id}"
+        r = source().get_one(context, full_resource_path)
         body = body_root(r)
         if body == nil || body.empty?
-          Arrest::logger.info "DocumentNotFoundError for #{self.resource_path}/#{id}"
+          Arrest::logger.info "DocumentNotFoundError for #{full_resource_path}"
           raise Errors::DocumentNotFoundError.new
         end
+
         resource = self.build(context, body.merge({:id => id}))
         resource
       end
