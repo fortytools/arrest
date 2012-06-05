@@ -15,7 +15,7 @@ module Arrest
       @base
     end
 
-    def add_headers(context,headers)
+    def add_headers(context, headers)
       decorator = context.header_decorator if context
       decorator ||= Arrest::Source.header_decorator
       hds = decorator.headers

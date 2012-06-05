@@ -9,7 +9,7 @@ module Arrest
       return nil unless value != nil
       raise "Expected an array but got #{value.class.name}" unless value.is_a?(Array)
       value.map do |v|
-        @clazz.new(parent, v)
+        @clazz.new(parent.context, v)
       end
     end
 
