@@ -244,7 +244,7 @@ module Arrest
     # convenience method printing curl command
     def curl
       hs = ""
-      Arrest::Source.header_decorator.headers.each_pair do |k,v|
+      self.context.header_decorator.headers.each_pair do |k,v|
         hs << " -H '#{k}:#{v}' "
       end
 
