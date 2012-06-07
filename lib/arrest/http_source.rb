@@ -34,7 +34,9 @@ module Arrest
       rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil, headers)
       rsl = ResponseLog.new(response.env[:status], response.body)
       Arrest::Source.call_logger.log(rql, rsl)
-      if response.env[:status] != 200
+      if response.env[:status] == 401
+        raise Errors::PermissionDeniedError.new(response.body)
+      elsif response.env[:status] != 200
         raise Errors::DocumentNotFoundError
       end
       response.body
@@ -53,6 +55,9 @@ module Arrest
       rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil, headers)
       rsl = ResponseLog.new(response.env[:status], response.body)
       Arrest::Source.call_logger.log(rql, rsl)
+      if response.env[:status] == 401
+        raise Errors::PermissionDeniedError.new(response.body)
+      end
       response.body
     end
 
