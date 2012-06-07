@@ -79,11 +79,14 @@ module Arrest
 
     attr_accessor :context
 
+    @@POLYMORPHIC_TYPE_MAP = {}
+
     class << self
       attr_reader :scopes
 
       def inherited(child)
         ScopedRoot::register_resource(child)
+        @@POLYMORPHIC_TYPE_MAP[ClassUtils.simple_name(child).to_sym] = child
       end
 
       def mk_proxy(context_provider)
@@ -184,6 +187,32 @@ module Arrest
         end
         all_filters
       end
+
+      def json_type_map
+        @@POLYMORPHIC_TYPE_MAP
+      end
+
+      def custom_json_type(new_key)
+        old_key = Arrest::ClassUtils.simple_name(self).to_sym
+        value = @@POLYMORPHIC_TYPE_MAP.delete(old_key) # remove default key for self
+        @@POLYMORPHIC_TYPE_MAP[new_key.to_sym] = value # add custom key for type
+      end
+
+      def json_type_to_class(type)
+        @@POLYMORPHIC_TYPE_MAP[type.to_sym]
+      end
+
+      def to_json_type
+        @@POLYMORPHIC_TYPE_MAP.invert[self]
+      end
+
+      def active_resource_classes
+        @@POLYMORPHIC_TYPE_MAP.values
+      end
+    end
+
+    def to_json_type
+      self.class.to_json_type
     end
 
     include BelongsTo

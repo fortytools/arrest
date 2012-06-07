@@ -34,7 +34,7 @@ module Arrest
 
         if params
           read_only =  params[:read_only] == true
-          polymorphic = params[:polymorphic] unless params[:polymorphic] == nil
+          polymorphic = !!params[:polymorphic]
           class_name = params[:class_name].to_s unless params[:class_name] == nil
           foreign_key = params[:foreign_key].to_s unless params[:foreign_key] == nil
         end
@@ -51,7 +51,8 @@ module Arrest
 
           begin
             if polymorphic
-              Arrest::Source.mod.const_get(polymorphic[val.type.to_sym]).find(self.context, val.id)
+              clazz = self.class.json_type_to_class(val.type)
+              clazz.find(self.context, val.id)
             else
               Arrest::Source.mod.const_get(class_name).find(self.context, val)
             end

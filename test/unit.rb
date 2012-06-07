@@ -426,15 +426,23 @@ class FirstTest < Test::Unit::TestCase
     comb = @scope.CommentableB.new()
     comb.save
 
-    c = @scope.Comment.new(:commentable_ref => { :id => coma.id, :type => "coma"})
+    c = @scope.Comment.new(:commentable_ref => { :id => coma.id, :type => coma.to_json_type.to_s})
     result = c.commentable
     assert_equal coma.id, c.commentable_ref.id
     assert_equal result.class, CommentableA
 
-    c2 = @scope.Comment.new(:commentable_ref => { :id => comb.id, :type => "comb"})
+    c2 = @scope.Comment.new(:commentable_ref => { :id => comb.id, :type => comb.to_json_type.to_s})
     result2 = c2.commentable
     assert_equal comb.id, c2.commentable_ref.id
     assert_equal result2.class, CommentableB
+
+    comd = @scope.CommentableD.new()
+    comd.save
+
+    c3 = @scope.Comment.new(:commentable_ref => { :id => comd.id, :type => comd.to_json_type.to_s})
+    result = c3.commentable
+    assert_equal comd.id, c3.commentable_ref.id
+    assert_equal result.class, CommentableD
   end
 
   def test_polymorphic_belongs_to_extended
@@ -443,8 +451,8 @@ class FirstTest < Test::Unit::TestCase
     comc = @scope.CommentableC.new()
     comc.save
 
-    c = @scope.ExtendedComment.new({ :special_commentable_ref => { :id => comc.id, :type => "comc"},
-                                     :commentable_ref => { :id => coma.id, :type => "coma" }})
+    c = @scope.ExtendedComment.new({ :special_commentable_ref => { :id => comc.id, :type => comc.to_json_type.to_s},
+                                     :commentable_ref => { :id => coma.id, :type => coma.to_json_type.to_s }})
     assert_equal c.commentable.class, CommentableA
     assert_equal c.other_commentable.class, CommentableC
 

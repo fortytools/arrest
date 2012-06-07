@@ -108,14 +108,16 @@ class CommentableB < Arrest::RootResource
 end
 class CommentableC < Arrest::RootResource
 end
+class CommentableD < Arrest::RootResource
+  custom_json_type :ComD
+end
 class Comment < Arrest::RootResource
-  belongs_to :commentable, :polymorphic => { :coma => "CommentableA",
-                                             :comb => "CommentableB" }
+  belongs_to :commentable, :polymorphic => true
 end
 class ExtendedComment < Comment
   belongs_to :other_commentable,
              :field_name => "special_commentable_ref",
-             :polymorphic => { :comc => :CommentableC }
+             :polymorphic => true
 end
 
 class DeleteMeAll < Arrest::RootResource
