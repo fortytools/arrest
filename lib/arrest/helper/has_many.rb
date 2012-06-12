@@ -35,9 +35,7 @@ module Arrest
         add_attribute(hm_attr)
 
         send :define_method, method_name do # e.g. define 'teams' method for notation 'has_many :teams'
-          @has_many_collections ||= {}
-          @has_many_collections[method_name] ||= HasManyCollection.new(self, hm_attr)
-          @has_many_collections[method_name]
+          HasManyCollection.new(self, hm_attr)
         end
       end
 

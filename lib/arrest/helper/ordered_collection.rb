@@ -96,6 +96,11 @@ module Arrest
       self
     end
 
+    def sort_by(field, order = :asc)
+      @sort_hash = {:sort => field.to_sym, :order => order.to_sym}
+      self
+    end
+
     private
 
     def collection
@@ -104,6 +109,9 @@ module Arrest
         if @page_size
           params[:pageSize] = @page_size
           params[:page] = @page
+        end
+        if @sort_hash
+          params.merge!(@sort_hash)
         end
         params.merge!(@filter) # override with params that got passed in
         url = build_url(@base_url, params)
@@ -116,7 +124,7 @@ module Arrest
 
     def build_url(base_url, params_hash)
       return base_url if params_hash.empty?
-      query_str = (base_url.include?('?') ? '&' : '?') 
+      query_str = (base_url.include?('?') ? '&' : '?')
       query_str += params_hash.map{|k,v| "#{k}=#{v}"}.join('&')
       base_url + query_str
     end

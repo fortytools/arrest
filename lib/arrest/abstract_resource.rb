@@ -255,7 +255,6 @@ module Arrest
     end
 
     def reload
-      @has_many_collections = {}
       @child_collections = {}
       @views = {}
       hash = internal_reload

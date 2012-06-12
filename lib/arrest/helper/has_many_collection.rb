@@ -12,6 +12,7 @@ module Arrest
       @page = 1
       @page_size = nil
       @per_page = 5
+      @sort_hash = {}
     end
 
     def build attributes = {}
@@ -103,21 +104,39 @@ module Arrest
       self
     end
 
+    def sort_by(field, order = :asc)
+      @sort_hash = {:sort => field.to_sym, :order => order.to_sym}
+      self
+    end
+
     private
 
     def children
       if @children == nil
+        params = {}
         if @page_size
-          query_params = "?pageSize=#{@page_size}&page=#{@page}"
-        else
-          query_params = ''
+          params[:pageSize] = @page_size
+          params[:page] = @page
         end
-        url = @parent.resource_location + '/' + @url_part.to_s + query_params
+        if @sort_hash
+          params.merge!(@sort_hash)
+        end
+
+        base_url = @parent.resource_location + '/' + @url_part.to_s
+        url = build_url(base_url, params)
+
         response = resolved_class.by_url(@parent.context, url)
         @total_count = response[:result_count]
         @children = response[:collection]
       end
       @children
+    end
+
+    def build_url(base_url, params_hash)
+      return base_url if params_hash.empty?
+      query_str = (base_url.include?('?') ? '&' : '?')
+      query_str += params_hash.map{|k,v| "#{k}=#{v}"}.join('&')
+      base_url + query_str
     end
 
     def resolved_class
