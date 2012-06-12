@@ -15,14 +15,14 @@ module Arrest
         foreign_key = clazz_name + "_id"
         sub_resource = false
         read_only = false
-        url_part = method_name.to_s
+        url_part = "/" + method_name.to_s
         if options
           clazz_name = options[:class_name].to_s unless options[:class_name] == nil
           foreign_key = "#{StringUtils.underscore(clazz_name)}_id"
           foreign_key = options[:foreign_key].to_s unless options[:foreign_key] == nil
           sub_resource = !!options[:sub_resource]
           read_only = options[:read_only]
-          url_part = options[:url_part].to_s unless options[:url_part] == nil
+          url_part = "/" + options[:url_part].to_s unless options[:url_part] == nil
         end
 
         hm_attr = create_has_many_attribute(sub_resource, # e.g. 'team_ids' attribute for 'has_many :teams'
@@ -33,9 +33,8 @@ module Arrest
                                             foreign_key,
                                             read_only)
         add_attribute(hm_attr)
-
-        send :define_method, method_name do # e.g. define 'teams' method for notation 'has_many :teams'
-          HasManyCollection.new(self, hm_attr)
+        send :define_method, method_name do |filter = {}|# e.g. define 'teams' method for notation 'has_many :teams'
+          OrderedCollection.new(self.context, clazz_name, self.resource_location + url_part.to_s, filter)
         end
       end
 
