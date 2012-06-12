@@ -93,18 +93,5 @@ class HasAttributesTest < Test::Unit::TestCase
     assert !ih.got_me_ids_changed?
     assert !ih.changed?
   end
-
-  def test_dirty_with_reload
-    Arrest::Source.source = nil
-    Arrest::Source.skip_validations = false
-    @scope = Arrest::ScopedRoot.new
-
-    ih = @scope.ItHasResource.new({:name => "Bla", :got_me_ids => ["BistDuEinRuede?"]})
-    ih.save
-
-    ih.reload
-    assert_equal "Bla", ih.name
-    assert_equal ["BistDuEinRuede?"], ih.got_me_ids
-  end
 end
 
