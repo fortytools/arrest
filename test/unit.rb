@@ -361,32 +361,6 @@ class FirstTest < Test::Unit::TestCase
     assert_equal "Foo1", v1_reloaded.zoos.first.name
   end
 
-  def test_has_many_with_reload
-    @scope.Zoo.new(:name => "Foo1").save
-    @scope.Zoo.new(:name => "Foo2").save
-    assert_equal 2, @scope.Zoo.all.length
-    all_zoo_ids = @scope.Zoo.all.map(&:id)
-    v1 = @scope.ZooOwner.new({:name => "Foo", :zoo_ids => all_zoo_ids})
-    v1.save
-
-    zoo_id = @scope.Zoo.all.first.id
-    v2 = @scope.ZooOwner.all.first
-    v2.zoo_ids = [zoo_id]
-    v2.save
-
-    v1.reload
-    assert_equal 1, v1.zoo_ids.length
-    assert_equal 1, v1.zoos.length
-    assert_equal zoo_id, v1.zoos.first.id
-  end
-
-  def test_build
-    v1 = @scope.ZooOwner.new({:name => "Foo"})
-    v1.save
-
-    zoo = v1.zoos.build
-    assert_equal v1.id, zoo.zoo_owner_id
-  end
 
   def test_scope_has_many
     z1 = @scope.Zoo.new(:name => "Foo1", :open => true)
@@ -500,83 +474,6 @@ class FirstTest < Test::Unit::TestCase
     assert_equal 3, Arrest::Source.source.node_count
   end
 
-  def test_has_many_matrix_in_mem_source
-    f1 = @scope.Foo.new()
-    f1.save
-    f2 = @scope.Foo.new()
-    f2.save
-    f3 = @scope.Foo.new()
-    f3.save
-
-    b1 = @scope.Bar.new({:foo_ids => [f1.id, f2.id], :foo_id => f3.id})
-    b1.save
-
-    assert_equal 2, b1.foos.length
-
-    b2 = @scope.Bar.new({:foo_ids => [f2.id, f3.id], :foo_id =>f1.id})
-    b2.save
-
-    f1.delete
-
-    b1_rel = @scope.Bar.find(b1.id)
-    assert_equal 1, b1_rel.foos.length
-    assert_equal f2.id, b1_rel.foos.first.id
-
-
-    f2.bar_ids=[b1.id]
-    f2.other_bar_ids=[b2.id]
-    f2.save
-    f2_rel = @scope.Foo.find(f2.id)
-    assert_equal 1, f2_rel.bars.length
-    assert_equal 1, f2_rel.other_bars.length
-
-    b2.delete
-
-    f2_rel = @scope.Foo.find(f2.id)
-    assert_equal 1, f2_rel.bars.length
-    assert_equal 0, f2_rel.other_bars.length
-    assert_equal b1.id, f2_rel.bars.first.id
-
-  end
-
-  def test_has_many_with_belongs_to
-    f1 = @scope.Foo.new()
-    f1.save
-    f2 = @scope.Foo.new()
-    f2.save
-    f3 = @scope.Foo.new()
-    f3.save
-
-    b1 = @scope.Bar.new({:other_foo_id => f1.id, :foo_id => f3.id})
-    b1.save
-    b2 = @scope.Bar.new({:other_foo_id => f2.id, :foo_id => f1.id})
-    b2.save
-
-    f1_rel = @scope.Foo.find(f1.id)
-    f2_rel = @scope.Foo.find(f2.id)
-    f3_rel = @scope.Foo.find(f3.id)
-
-    assert_equal 1, f1_rel.bars.length
-    assert_equal b1.id, f1_rel.other_bars.first.id
-    assert_equal b1.id, f3_rel.bars.first.id
-
-    assert_equal b2.id, f1_rel.bars.first.id
-    assert_equal b2.id, f2_rel.other_bars.first.id
-
-    #test update
-    b1.foo_id = f2.id
-    b1.save
-
-
-    f3_rel = @scope.Foo.find(f3.id)
-    assert f3_rel.bars.empty?
-    f2_rel = @scope.Foo.find(f2.id)
-    assert_equal b1.id, f2_rel.bars.first.id
-
-    b1.delete
-    f1_rel = @scope.Foo.find(f1.id)
-    assert f1_rel.other_bars.empty?
-  end
 
   def test_equality_non_persistent
     zoo1 = @scope.Zoo.new(:name => 'zoo1')
