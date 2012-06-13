@@ -1,19 +1,26 @@
 module Arrest
   class OrderedCollection #< BasicObject
 
-    def initialize(context, class_or_class_name, base_url, filter = {})
-      reset_params()
-      @filter = filter
+    def initialize(context, class_or_class_name, base_url, query_params = {})
+      @collection = nil
       @context = context
+
       if class_or_class_name.is_a?(String) || class_or_class_name.is_a?(Symbol)
         @clazz_name = (StringUtils.classify(class_or_class_name.to_s))
       else
         @clazz = class_or_class_name
       end
       @base_url = base_url
+
+      @default_page = 1
+      @default_page_size = 5
+
+      @page_hash = {}
+      @sort_hash = {}
+      @query_params = query_params
+
       define_filters
     end
-
 
     def build(attributes = {})
       resolved_class.new(@context, attributes)
@@ -21,7 +28,7 @@ module Arrest
 
 
     def method_missing(*args, &block)
-       collection.send(*args, &block)
+      collection.send(*args, &block)
     end
 
     def inspect
@@ -56,11 +63,11 @@ module Arrest
     end
 
     def offset_value #:nodoc:
-      ((@page_hash[:pageSize] || 0) * (@page - 1)) || 0
+      ((@page_hash[:pageSize] || 0) * (current_page - 1)) || 0
     end
 
     def current_page
-      @page
+      @page_hash[:page] || @default_page
     end
 
     def num_pages
@@ -80,23 +87,29 @@ module Arrest
     end
 
     def current_page_count #:nodoc:
-      @page
+      @page_hash[:page] || @default_page
     end
 
     def per(num)
-      @page_size = num.to_i
-      @page_hash.merge!({:pageSize => @page_size, :page => @page})
+      @collection = nil unless @page_hash[:pageSize] == num.to_i
+
+      @page_hash[:pageSize] = num.to_i
+      @page_hash[:page] ||= @default_page
       self
     end
 
     def page(num)
+      @collection = nil unless @page_hash[:page] == num.to_i
+
       num ||= 1
-      @page = num.to_i
-      @page_hash.merge!({:pageSize => @page_size, :page => @page})
+      @page_hash[:page] = num.to_i
+      @page_hash[:pageSize] ||= @default_page_size
       self
     end
 
     def order_by(field, order = :asc)
+      @collection = nil if @sort_hash[:sort] != field.to_sym || @sort_hash[:order] != order.to_sym
+
       @sort_hash = {:sort => field.to_sym, :order => order.to_sym}
       self
     end
@@ -104,27 +117,23 @@ module Arrest
     private
 
     def collection
-      params = {}
-      params.merge!(@page_hash)
-      params.merge!(@sort_hash)
 
-      params.merge!(@filter) # override with params that got passed in
-      url = build_url(@base_url, params)
+      unless @collection
+        params = {}
+        params.merge!(@page_hash)
+        params.merge!(@sort_hash)
 
-      response = resolved_class.by_url(@context, url)
-      @total_count = response[:result_count]
+        params.merge!(@query_params) # override with params that got passed in
+        url = build_url(@base_url, params)
 
-      reset_params()
+        response = resolved_class.by_url(@context, url)
+        @total_count = response[:result_count]
 
-      response[:collection]
+        @collection = response[:collection]
+      end
+      @collection
     end
 
-    def reset_params
-      @page = 1
-      @page_size = 5
-      @page_hash = {}
-      @sort_hash = {}
-    end
 
     def build_url(base_url, params_hash)
       return base_url if params_hash.empty?
