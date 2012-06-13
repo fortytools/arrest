@@ -14,6 +14,12 @@ module Arrest
       define_filters
     end
 
+
+    def build(attributes = {})
+      resolved_class.new(@context, attributes)
+    end
+
+
     def method_missing(*args, &block)
        collection.send(*args, &block)
     end
