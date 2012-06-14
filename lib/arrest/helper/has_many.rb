@@ -34,7 +34,7 @@ module Arrest
                                             read_only)
         add_attribute(hm_attr)
         send :define_method, method_name do |filter = {}|# e.g. define 'teams' method for notation 'has_many :teams'
-          OrderedCollection.new(self.context, clazz_name, self.resource_location + url_part.to_s, filter)
+          HasManyCollection.new(self, self.context, clazz_name, self.resource_location + url_part.to_s, filter)
         end
       end
 
