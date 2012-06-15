@@ -51,6 +51,10 @@ module Arrest
     target Integer
   end
 
+  class FloatConv < IdentConv
+    target Float
+  end
+
   class ArrayConv < IdentConv
     target Array
 
