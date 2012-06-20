@@ -72,26 +72,5 @@ class HasAttributesTest < Test::Unit::TestCase
     has_many :got_mes, :sub_resource => true
   end
 
-  def test_dirty_attribute
-    Arrest::Source.source = nil
-    Arrest::Source.skip_validations = false
-
-    ih = ItHasResource.new({:name => "Bla"})
-    ih.save
-    assert !ih.got_me_ids_changed?
-    assert !ih.changed?
-
-    ih.got_me_ids = ["huhu"]
-    assert ih.got_me_ids_changed?
-    assert ih.changed?
-    ih.save
-
-    assert !ih.got_me_ids_changed?
-    assert !ih.changed?
-
-    ih.got_me_ids = ["huhu"]
-    assert !ih.got_me_ids_changed?
-    assert !ih.changed?
-  end
 end
 

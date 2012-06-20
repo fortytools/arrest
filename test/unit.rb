@@ -455,25 +455,6 @@ class FirstTest < Test::Unit::TestCase
     assert all.empty?, "After deletion all entities should have been removed"
   end
 
-  def test_update_belongs_to
-    f1 = @scope.Foo.new()
-    f1.save
-    assert_equal 0, Arrest::Source.source.edge_count
-    b1 = @scope.Bar.new({:foo_id => f1.id})
-    b1.save
-    assert_equal 2, Arrest::Source.source.edge_count
-    assert_equal 2, Arrest::Source.source.node_count
-
-    f2 = @scope.Foo.new()
-    f2.save
-    assert_equal 2, Arrest::Source.source.edge_count
-    b1.foo_id = f2.id
-    b1.save
-    #Arrest::Source.source.edge_matrix.each_pair{|k,v| y k; y v}
-    assert_equal 2, Arrest::Source.source.edge_count
-    assert_equal 3, Arrest::Source.source.node_count
-  end
-
 
   def test_equality_non_persistent
     zoo1 = @scope.Zoo.new(:name => 'zoo1')
@@ -517,20 +498,6 @@ class FirstTest < Test::Unit::TestCase
     assert_equal zoo1, zoo1_reloaded, "Objects of the same class with the same id should be equal even if they differ in attributes (same as in rails)"
   end
 
-  def test_has_many_sub_resource_attr_setter
-    b = @scope.BarWithHasManySubResource.new()
-    b.save
-
-    assert_raise ArgumentError do
-      b.foo_ids = nil
-    end
-
-    assert_raise ArgumentError do
-      b.foo_ids = "Tralala"
-    end
-
-    b.foo_ids = []
-  end
 
   def test_update_attribute
     zoo1 = @scope.Zoo.new(:name => 'zoo1')

@@ -291,8 +291,6 @@ module Arrest
         old.send("#{f.name}=", rest_resource.send(f.name))
       end
 
-      identify_and_store_edges(@@edge_matrix, rest_resource)
-
       true
     end
 
@@ -314,8 +312,6 @@ module Arrest
         @@collections[rest_resource.resource_path] = []
       end
       @@collections[rest_resource.resource_path] << rest_resource.id
-
-      identify_and_store_edges(@@edge_matrix, rest_resource)
 
       true
     end
