@@ -21,6 +21,7 @@ module Arrest
 
       # FIXME (bk, at) : propagate scopes to instances as well
       define_filters
+      define_scopes
     end
 
     def build(attributes = {})
@@ -153,6 +154,18 @@ module Arrest
           def #{filter.name} *args
             real_args = [collection] + args
             #{resolved_class.name}.FILTER_#{filter.name}(real_args)
+          end
+        end_eval
+      end
+    end
+
+    def define_scopes
+      return unless resolved_class.scopes
+      resolved_class.scopes.each do |scope|
+        resource_name = scope.options[:resource_name] || scope.name
+        self.instance_eval <<-"end_eval"
+          def #{scope.name} query_params = {}
+            OrderedCollection.new(@context, ClassUtils.simple_name(resolved_class), "#{@base_url}/#{resource_name}", query_params)
           end
         end_eval
       end
