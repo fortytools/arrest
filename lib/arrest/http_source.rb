@@ -46,6 +46,7 @@ module Arrest
       get_one(context, path)
     end
 
+    # FIXME (bk, at) : seems to be identical to get_one - prepare to refactor
     def get_many(context, sub, filter={})
       headers = nil
       response = self.connection().get do |req|

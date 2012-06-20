@@ -17,16 +17,23 @@ module Arrest
         ids_method_url_part = "/" + ids_method_name.to_s                                  # /my_team_ids
         method_url_part = "/" + method_name.to_s                                          # /my_teams
 
+        read_only = false
         if options
           clazz_name = options[:class_name].to_s unless options[:class_name] == nil       # :Team
           foreign_key = "#{StringUtils.underscore(clazz_name)}_id"                        # team_id
           foreign_key = options[:foreign_key].to_s unless options[:foreign_key] == nil    # team_id
           ids_method_url_part += "/" + options[:url_part].to_s unless options[:url_part] == nil # /my_team_ids + /my-url-part
           method_url_part     += "/" + options[:url_part].to_s unless options[:url_part] == nil # /my_teams + /my-url-part
+          read_only = !!options[:read_only] unless options[:read_only] == nil
         end
 
-        send(:define_method, ids_method_name) do |filter = {}|
-          OrderedCollection.new(self.context, String, self.resource_location + ids_method_url_part, filter)
+
+        if read_only
+          send(:define_method, ids_method_name) do |filter = {}|
+            IdsCollection.new(self, self.resource_location + ids_method_url_part)
+          end
+        else
+          self.attribute ids_method_name.to_sym, Array
         end
 
         send(:define_method, method_name) do |filter = {}|
