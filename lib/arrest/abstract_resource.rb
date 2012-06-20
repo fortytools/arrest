@@ -70,7 +70,6 @@ module Arrest
     extend ActiveModel::Naming
     include ActiveModel::Validations
     include ActiveModel::Conversion
-    include ActiveModel::Dirty
     include ActiveModel::Validations::Callbacks
     extend ActiveModel::Callbacks
     extend ActiveModel::Translation
