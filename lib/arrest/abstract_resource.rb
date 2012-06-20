@@ -233,6 +233,7 @@ module Arrest
     def reload
       @child_collections = {}
       @views = {}
+      @belongs_tos = {}
       hash = internal_reload
       self.attributes= hash
     end
