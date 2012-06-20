@@ -45,20 +45,22 @@ module Arrest
 
         send :define_method, name do
           val = self.send(field_name)
-          if val == nil || val == ""
+          if val.blank?
             return nil
           end
 
-          begin
-            if polymorphic
-              clazz = self.class.json_type_to_class(val.type)
-              clazz.find(self.context, val.id)
-            else
-              Arrest::Source.mod.const_get(class_name).find(self.context, val)
+          @belongs_tos ||= {}
+          @belongs_tos[name] ||=
+            begin
+              if polymorphic
+                clazz = self.class.json_type_to_class(val.type)
+                clazz.find(self.context, val.id)
+              else
+                Arrest::Source.mod.const_get(class_name).find(self.context, val)
+              end
+            rescue Errors::DocumentNotFoundError => e
+              raise Errors::DocumentNotFoundError, "Couldnt find a #{class_name} with id #{val}"
             end
-          rescue Errors::DocumentNotFoundError => e
-            raise Errors::DocumentNotFoundError, "Couldnt find a #{class_name} with id #{val}"
-          end
 
         end
       end

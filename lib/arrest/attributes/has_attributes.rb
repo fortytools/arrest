@@ -136,24 +136,10 @@ module Arrest
       def add_attribute(attribute)
         @fields ||= []
         # define setter for attribute value
-        if (attribute.is_a?(HasManySubResourceAttribute))
-          send :define_method, "#{attribute.name}=" do |v|
-            raise ArgumentError, 'Argument is not of Array type' unless v.is_a?(Array)
-            Arrest::debug "setter #{self.class.name} #{attribute.name} = #{v}"
-
-            # inform ActiveModel::Dirty about dirtiness of this attribute
-            self.send("#{attribute.name}_will_change!") unless v == self.attribute_values[attribute.name]
-
-            self.attribute_values[attribute.name] = v
-          end
-        else
-          send :define_method, "#{attribute.name}=" do |v|
-            converted_v = convert(attribute, v)
-            Arrest::debug "setter #{self.class.name} #{attribute.name} = #{converted_v}"
-            self.attribute_values[attribute.name] = converted_v
-            #Arrest::debug "setter #{self.class.name} #{attribute.name} = #{v}"
-            #self.attribute_values[attribute.name] = v
-          end
+        send :define_method, "#{attribute.name}=" do |v|
+          converted_v = convert(attribute, v)
+          Arrest::debug "setter #{self.class.name} #{attribute.name} = #{converted_v}"
+          self.attribute_values[attribute.name] = converted_v
         end
 
         # define getter for attribute value
