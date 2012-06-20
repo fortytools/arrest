@@ -267,7 +267,7 @@ module Arrest
         e.name.to_s == sub_url && ids.include?(e.id)
       end
 
-      @@edge_matrix[object_id].delete_if do |e| 
+      @@edge_matrix[object_id].delete_if do |e|
         e.name.to_s == sub_url && !ids.include?(e.id)
       end
 
