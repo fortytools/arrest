@@ -85,13 +85,13 @@ module Arrest
       def scope name, options = {}, &block
         super(name, options)
         if block_given?
-          send :define_singleton_method, name do |context|
-            self.all(context).select(&block)
+          send :define_singleton_method, name do |context, filter = {}|
+            self.all(context, filter).select(&block)
           end
         else
-          send :define_singleton_method, name do |context|
+          send :define_singleton_method, name do |context, filter = {}|
             resource_name = options[:resource_name] || name
-            Arrest::OrderedCollection.new(context, self, self.scoped_path(resource_name))
+            Arrest::OrderedCollection.new(context, self, self.scoped_path(resource_name), filter)
           end
         end
 
