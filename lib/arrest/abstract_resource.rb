@@ -99,15 +99,18 @@ module Arrest
       end
 
       def body_root(response)
-        if response == nil
-          raise Errors::DocumentNotFoundError
+        ::ActiveSupport::Notifications.instrument("parse.sgdb",
+                                              :length => response.length) do
+          if response == nil
+            raise Errors::DocumentNotFoundError
+          end
+          all = JSON.parse(response)
+          body = all["result"]
+          if body == nil
+            raise Errors::DocumentNotFoundError
+          end
+          body
         end
-        all = JSON.parse(response)
-        body = all["result"]
-        if body == nil
-          raise Errors::DocumentNotFoundError
-        end
-        body
       end
 
       def build(context, hash)

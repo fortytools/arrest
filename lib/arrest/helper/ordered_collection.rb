@@ -19,7 +19,6 @@ module Arrest
       @sort_hash = {}
       @query_params = query_params
 
-      # FIXME (bk, at) : propagate scopes to instances as well
       define_filters
       define_scopes
     end

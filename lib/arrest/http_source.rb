@@ -26,42 +26,48 @@ module Arrest
     end
 
     def get_one(context, sub, filter={})
-      headers = nil
-      response = self.connection().get do |req|
-        req.url(sub, filter)
-        headers = add_headers(context, req.headers)
+      profiler_status_str = ""
+      ::ActiveSupport::Notifications.instrument("http.sgdb",
+                                            :method => :get, :url => sub, :status => profiler_status_str) do
+        headers = nil
+        response = self.connection().get do |req|
+          req.url(sub, filter)
+          headers = add_headers(context, req.headers)
+        end
+        rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil, headers)
+        rsl = ResponseLog.new(response.env[:status], response.body)
+        Arrest::Source.call_logger.log(rql, rsl)
+        if response.env[:status] == 401
+          raise Errors::PermissionDeniedError.new(response.body)
+        elsif response.env[:status] != 200
+          raise Errors::DocumentNotFoundError
+        end
+        profiler_status_str << response.env[:status].to_s
+        response.body
       end
-      rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil, headers)
-      rsl = ResponseLog.new(response.env[:status], response.body)
-      Arrest::Source.call_logger.log(rql, rsl)
-      if response.env[:status] == 401
-        raise Errors::PermissionDeniedError.new(response.body)
-      elsif response.env[:status] != 200
-        raise Errors::DocumentNotFoundError
-      end
-      response.body
-    end
-
-    def get_many_other_ids(context, path)
-      get_one(context, path)
     end
 
     # FIXME (bk, at) : seems to be identical to get_one - prepare to refactor
     def get_many(context, sub, filter={})
-      headers = nil
-      response = self.connection().get do |req|
-        req.url(sub, filter)
-        headers = add_headers(context, req.headers)
+      profiler_status_str = ""
+      ::ActiveSupport::Notifications.instrument("http.sgdb",
+                                            :method => :get, :url => sub, :status => profiler_status_str) do
+        headers = nil
+        response = self.connection().get do |req|
+          req.url(sub, filter)
+          headers = add_headers(context, req.headers)
+        end
+        rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil, headers)
+        rsl = ResponseLog.new(response.env[:status], response.body)
+        Arrest::Source.call_logger.log(rql, rsl)
+        if response.env[:status] == 401
+          raise Errors::PermissionDeniedError.new(response.body)
+        elsif response.env[:status] != 200
+          raise Errors::DocumentNotFoundError
+        end
+        profiler_status_str << response.env[:status].to_s
+        response.body
       end
-      rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil, headers)
-      rsl = ResponseLog.new(response.env[:status], response.body)
-      Arrest::Source.call_logger.log(rql, rsl)
-      if response.env[:status] == 401
-        raise Errors::PermissionDeniedError.new(response.body)
-      elsif response.env[:status] != 200
-        raise Errors::DocumentNotFoundError
-      end
-      response.body
     end
 
 
@@ -79,19 +85,24 @@ module Arrest
     end
 
     def delete(context, rest_resource)
-      raise "To delete an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
-      headers = nil
-      response = self.connection().delete do |req|
-        req.url(rest_resource.resource_location)
-        headers = add_headers(context, req.headers)
+      profiler_status_str = ""
+      ::ActiveSupport::Notifications.instrument("http.sgdb",
+                                            :method => :delete, :url => rest_resource.resource_location, :status => profiler_status_str) do
+        raise "To delete an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
+        headers = nil
+        response = self.connection().delete do |req|
+          req.url(rest_resource.resource_location)
+          headers = add_headers(context, req.headers)
+        end
+        rql = RequestLog.new(:delete, rest_resource.resource_location, nil, headers)
+        rsl = ResponseLog.new(response.env[:status], response.body)
+        Arrest::Source.call_logger.log(rql, rsl)
+        if response.env[:status] != 200
+          handle_errors(rest_resource, response.body, response.env[:status])
+        end
+        profiler_status_str << response.env[:status].to_s
+        response.env[:status] == 200
       end
-      rql = RequestLog.new(:delete, rest_resource.resource_location, nil, headers)
-      rsl = ResponseLog.new(response.env[:status], response.body)
-      Arrest::Source.call_logger.log(rql, rsl)
-      if response.env[:status] != 200
-        handle_errors(rest_resource, response.body, response.env[:status])
-      end
-      response.env[:status] == 200
     end
 
     def put_sub_resource(rest_resource, sub_url, ids)
@@ -116,19 +127,24 @@ module Arrest
 
 
     def internal_put(rest_resource, location, body)
-      headers = nil
-      response = self.connection().put do |req|
-        req.url(location)
-        headers = add_headers(rest_resource.context, req.headers)
-        req.body = body
+      profiler_status_str = ""
+      ::ActiveSupport::Notifications.instrument("http.sgdb",
+                                            :method => :delete, :url => rest_resource.resource_location, :status => profiler_status_str) do
+        headers = nil
+        response = self.connection().put do |req|
+          req.url(location)
+          headers = add_headers(rest_resource.context, req.headers)
+          req.body = body
+        end
+        rql = RequestLog.new(:put, location, body, headers)
+        rsl = ResponseLog.new(response.env[:status], response.body)
+        Arrest::Source.call_logger.log(rql, rsl)
+        if response.env[:status] != 200
+          handle_errors(rest_resource, response.body, response.env[:status])
+        end
+        profiler_status_str << response.env[:status].to_s
+        response.env[:status] == 200
       end
-      rql = RequestLog.new(:put, location, body, headers)
-      rsl = ResponseLog.new(response.env[:status], response.body)
-      Arrest::Source.call_logger.log(rql, rsl)
-      if response.env[:status] != 200
-        handle_errors(rest_resource, response.body, response.env[:status])
-      end
-      response.env[:status] == 200
     end
 
     def insert_nulls!(rest_resource, hash)
@@ -141,34 +157,37 @@ module Arrest
     end
 
     def post(context, rest_resource)
-      raise "new object must have setter for id" unless rest_resource.respond_to?(:id=)
-      raise "new object must not have id" if rest_resource.respond_to?(:id) && rest_resource.id != nil
-      hash = rest_resource.to_jhash
-      hash.delete(:id)
-      hash.delete('id')
+      profiler_status_str = ""
+      ::ActiveSupport::Notifications.instrument("http.sgdb",
+                                            :method => :post, :url => rest_resource.resource_path, :status => profiler_status_str) do
+        raise "new object must have setter for id" unless rest_resource.respond_to?(:id=)
+        raise "new object must not have id" if rest_resource.respond_to?(:id) && rest_resource.id != nil
+        hash = rest_resource.to_jhash
+        hash.delete(:id)
+        hash.delete('id')
 
-      insert_nulls!(rest_resource,hash)
+        insert_nulls!(rest_resource,hash)
 
-      body = JSON.generate(hash)
-      headers = nil
-      response = self.connection().post do |req|
-        req.url rest_resource.resource_path
-        headers = add_headers(context, req.headers)
-        req.body = body
+        body = JSON.generate(hash)
+        headers = nil
+        response = self.connection().post do |req|
+          req.url rest_resource.resource_path
+          headers = add_headers(context, req.headers)
+          req.body = body
+        end
+        rql = RequestLog.new(:post, rest_resource.resource_path, body, headers)
+        rsl = ResponseLog.new(response.env[:status], response.body)
+        Arrest::Source.call_logger.log(rql, rsl)
+        if (response.env[:status] == 201)
+          location = response.env[:response_headers][:location]
+          id = location.gsub(/^.*\//, '')
+          rest_resource.id= id
+          true
+        else
+          handle_errors(rest_resource, response.body, response.env[:status])
+          false
+        end
       end
-      rql = RequestLog.new(:post, rest_resource.resource_path, body, headers)
-      rsl = ResponseLog.new(response.env[:status], response.body)
-      Arrest::Source.call_logger.log(rql, rsl)
-      if (response.env[:status] == 201)
-        location = response.env[:response_headers][:location]
-        id = location.gsub(/^.*\//, '')
-        rest_resource.id= id
-        true
-      else
-        handle_errors(rest_resource, response.body, response.env[:status])
-        false
-      end
-
     end
 
     def connection
