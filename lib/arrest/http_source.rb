@@ -26,6 +26,7 @@ module Arrest
     end
 
     def get_one(context, sub, filter={})
+      sub = fix_url_encode(sub)
       profiler_status_str = ""
       ::ActiveSupport::Notifications.instrument("http.sgdb",
                                             :method => :get, :url => sub, :status => profiler_status_str) do
@@ -49,6 +50,7 @@ module Arrest
 
     # FIXME (bk, at) : seems to be identical to get_one - prepare to refactor
     def get_many(context, sub, filter={})
+      sub = fix_url_encode(sub)
       profiler_status_str = ""
       ::ActiveSupport::Notifications.instrument("http.sgdb",
                                             :method => :get, :url => sub, :status => profiler_status_str) do
@@ -213,6 +215,17 @@ module Arrest
     end
 
     private
+
+      def fix_url_encode(input_url)
+        q_mark_idx = input_url.rindex('?')
+        if q_mark_idx
+          head,query = input_url.split('?')
+          head + '?' + query.gsub('+', '%2B')
+        else
+          input_url
+        end
+
+      end
 
       def handle_errors rest_resource, body, status
         err = Arrest::Source.error_handler.convert(body,status)
