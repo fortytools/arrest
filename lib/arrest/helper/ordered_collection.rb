@@ -1,3 +1,5 @@
+require 'cgi'
+
 module Arrest
   class OrderedCollection #< BasicObject
 
@@ -139,7 +141,7 @@ module Arrest
     def build_url(base_url, params_hash)
       return base_url if params_hash.empty?
       query_str = (base_url.include?('?') ? '&' : '?')
-      query_str += params_hash.map{|k,v| "#{k}=#{v}"}.join('&')
+      query_str += params_hash.map{|k,v| "#{CGI::escape(k.to_s)}=#{CGI::escape(v.to_s)}"}.join('&')
       base_url + query_str
     end
 
