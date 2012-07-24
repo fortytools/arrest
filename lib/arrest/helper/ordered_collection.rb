@@ -141,8 +141,14 @@ module Arrest
     def build_url(base_url, params_hash)
       return base_url if params_hash.empty?
       query_str = (base_url.include?('?') ? '&' : '?')
-      query_str += params_hash.map{|k,v| "#{CGI::escape(k.to_s)}=#{CGI::escape(v.to_s)}"}.join('&')
+      query_str += params_hash.map{|k,v| "#{safe_encode(k.to_s)}=#{safe_encode(v.to_s)}"}.join('&')
       base_url + query_str
+    end
+
+    # transforms value into url safe string
+    # as CGI::escape turns '+' to '%2B' and ' ' to '+', we safely encode the string and reencode the pluses into correct %20 again
+    def safe_encode(string)
+      CGI::escape(string).gsub(/\+/, '%20')
     end
 
     def resolved_class
