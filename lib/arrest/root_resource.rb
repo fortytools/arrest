@@ -11,7 +11,7 @@ module Arrest
       # in a hash combined with metadata
       def by_url(context, url)
         begin
-          response = source().get_many(context, url)
+          response = source().get(context, url)
           parsed_hash = JSON.parse(response)
           result_count = parsed_hash['result_count']
           body = body_root(response)
@@ -48,7 +48,7 @@ module Arrest
         end
 
         full_resource_path = "#{self.resource_path}/#{id}"
-        r = source().get_one(context, full_resource_path)
+        r = source().get(context, full_resource_path)
         body = body_root(r)
         if body == nil || body.empty?
           Arrest::logger.info "DocumentNotFoundError for #{full_resource_path}"
@@ -105,7 +105,7 @@ module Arrest
       def stub(context, stub_id)
         n = self.new(context)
         n.initialize_has_attributes({:id => stub_id}) do
-          r = n.class.source().get_one(@context, "#{self.resource_path}/#{stub_id}")
+          r = n.class.source().get(@context, "#{self.resource_path}/#{stub_id}")
           body = n.class.body_root(r)
           n.init_from_hash(body, true)
         end

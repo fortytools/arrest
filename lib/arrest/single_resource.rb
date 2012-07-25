@@ -4,7 +4,7 @@ module Arrest
   class SingleResource < RootResource
     class << self
       def load(context)
-        r = source().get_one(context, "#{self.resource_path}")
+        r = source().get(context, "#{self.resource_path}")
         body = body_root(r)
         if body == nil || body.empty?
           Arrest::logger.info "DocumentNotFoundError for #{self.resource_path}"

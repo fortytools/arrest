@@ -25,11 +25,11 @@ module Arrest
       hds
     end
 
-    def get_one(context, sub, filter={})
+    def get(context, sub, filter={})
       sub = fix_url_encode(sub)
       profiler_status_str = ""
       ::ActiveSupport::Notifications.instrument("http.sgdb",
-                                            :method => :get, :url => sub, :status => profiler_status_str) do
+                                                :method => :get, :url => sub, :status => profiler_status_str) do
         headers = nil
         response = self.connection().get do |req|
           req.url(sub, filter)
@@ -47,31 +47,6 @@ module Arrest
         response.body
       end
     end
-
-    # FIXME (bk, at) : seems to be identical to get_one - prepare to refactor
-    def get_many(context, sub, filter={})
-      sub = fix_url_encode(sub)
-      profiler_status_str = ""
-      ::ActiveSupport::Notifications.instrument("http.sgdb",
-                                            :method => :get, :url => sub, :status => profiler_status_str) do
-        headers = nil
-        response = self.connection().get do |req|
-          req.url(sub, filter)
-          headers = add_headers(context, req.headers)
-        end
-        rql = RequestLog.new(:get, "#{sub}#{hash_to_query filter}", nil, headers)
-        rsl = ResponseLog.new(response.env[:status], response.body)
-        Arrest::Source.call_logger.log(rql, rsl)
-        if response.env[:status] == 401
-          raise Errors::PermissionDeniedError.new(response.body)
-        elsif response.env[:status] != 200
-          raise Errors::DocumentNotFoundError
-        end
-        profiler_status_str << response.env[:status].to_s
-        response.body
-      end
-    end
-
 
     def delete_all(context, resource_path)
       headers = nil
@@ -107,13 +82,6 @@ module Arrest
       end
     end
 
-    def put_sub_resource(rest_resource, sub_url, ids)
-      location = "#{rest_resource.resource_location}/#{sub_url}"
-      body = ids.to_json
-
-      internal_put(rest_resource, location, body)
-    end
-
     def put(context, rest_resource)
       raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
       hash = rest_resource.to_jhash
@@ -124,9 +92,6 @@ module Arrest
 
       internal_put(rest_resource, rest_resource.resource_location, body)
     end
-
-
-
 
     def internal_put(rest_resource, location, body)
       profiler_status_str = ""

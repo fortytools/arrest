@@ -23,7 +23,7 @@ module Arrest
       def all_for(parent)
         raise "Parent has no id yet" unless parent.id
         begin
-          body_root(source().get_many(parent.context, self.resource_path_for(parent))).map do |h|
+          body_root(source().get(parent.context, self.resource_path_for(parent))).map do |h|
             self.build(parent, h)
           end
         rescue Arrest::Errors::DocumentNotFoundError
@@ -36,7 +36,7 @@ module Arrest
       end
 
       def find_for(context, parent, id)
-        r = source().get_one(context, "#{self.resource_path_for(parent)}/#{id}")
+        r = source().get(context, "#{self.resource_path_for(parent)}/#{id}")
         body = body_root(r)
         self.build(parent, body)
       end
@@ -62,7 +62,7 @@ module Arrest
         else
           send :define_singleton_method, name do |parent|
             raise "Parent has no id yet" unless parent.id
-            body_root(source().get_many(parent.context, self.scoped_path_for(parent, name))).map do |h|
+            body_root(source().get(parent.context, self.scoped_path_for(parent, name))).map do |h|
               self.build(parent, h)
             end
           end

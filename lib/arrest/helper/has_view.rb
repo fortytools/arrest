@@ -19,7 +19,7 @@ module Arrest
           @views ||= {}
           @views[method_name] ||= begin
 
-            r = self.class.source().get_one(self.context, "#{self.resource_path}/#{id}/#{method_name}")
+            r = self.class.source().get(self.context, "#{self.resource_path}/#{id}/#{method_name}")
             r = self.class.body_root(r)
 
             Arrest::Source.mod.const_get(clazz).new(self.context, r)

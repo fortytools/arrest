@@ -20,7 +20,7 @@ module Arrest
     def collection
       unless @collection
 
-        r = @parent.class.source().get_one(@parent.context, "#{@url}")
+        r = @parent.class.source().get(@parent.context, "#{@url}")
         @collection = @parent.class.body_root(r)
 
       end

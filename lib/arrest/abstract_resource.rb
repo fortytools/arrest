@@ -237,6 +237,8 @@ module Arrest
       @child_collections = {}
       @views = {}
       @belongs_tos = {}
+      @ids_collections = {}
+      @has_many_collections = {}
       hash = internal_reload
       self.attributes= hash
     end
