@@ -95,25 +95,6 @@ class NestedResourcesTest < Test::Unit::TestCase
 
   end
 
-  def test_custom_belongs_to
-
-    new_zoo = @scope.Zoo.new({:name => "Foo"})
-    new_zoo.save
-
-    c = @scope.CustomNamedBelongsTo.new({:name => 'Bar', :schinken => new_zoo.id, :batzen => new_zoo.id})
-
-    c.save
-    assert_not_nil c.id, "Persisted object should have id"
-    assert_equal  "Foo", c.zoo_thing.name
-    assert_equal  "Foo", c.zoo.name
-
-
-    assert_not_nil c.id, "Persisted zoo should have id"
-    c_reloaded = @scope.CustomNamedBelongsTo.all.first
-    assert_equal  "Foo", c_reloaded.zoo_thing.name
-    assert_equal  "Foo", c_reloaded.zoo.name
-
-  end
 
   def assert_equal_hashes expected, actual
     assert_equal_hashes_ expected, actual, ''
