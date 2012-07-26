@@ -27,11 +27,28 @@ module Arrest
     def update(id, object)
       @map[id] = object
     end
+
+    def remove(id)
+      @map.delete(id)
+    end
+
+    def flush()
+      @map.clear
+    end
   end
 
   class DummyCache
     def lookup(id, &blk)
        yield
+    end
+
+    def update(id, object)
+    end
+
+    def remove(id)
+    end
+
+    def flush()
     end
   end
 end

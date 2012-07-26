@@ -164,7 +164,7 @@ module Arrest
       if Source.skip_validations || self.valid?
         req_type = new_record? ? :post : :put
         success = !!AbstractResource::source.send(req_type, @context, self)
-        context.cache.update(self.id, self) if success
+        self.context.cache.flush
         success
       else
         false
@@ -192,6 +192,7 @@ module Arrest
     end
 
     def delete
+      self.context.cache.flush
       AbstractResource::source().delete(@context, self)
     end
 
