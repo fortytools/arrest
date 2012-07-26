@@ -1,4 +1,3 @@
-require 'arrest/string_utils'
 
 module Arrest
 

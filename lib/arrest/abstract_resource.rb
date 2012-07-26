@@ -1,70 +1,10 @@
 require 'json'
-require 'arrest/string_utils'
 require 'time'
 require 'active_model'
 
 Scope = Struct.new(:name, :options, :block)
 
 module Arrest
-
-  class RequestContext
-    attr_accessor :header_decorator
-  end
-
-  class ScopedRoot
-    attr_accessor :context
-
-    def initialize(context = Arrest::RequestContext.new())
-      @context = context
-    end
-
-    def self.register_resource(clazz)
-      @classes ||= []
-      @classes << clazz
-      send :define_method, ClassUtils.simple_name(clazz) do ||
-        proxy = clazz.mk_proxy(self)
-      proxy
-      end
-    end
-
-    def self.registered_classes
-      @classes ||= []
-      @classes
-    end
-
-    def delete_all
-      self.class.registered_classes.each do |clazz|
-        begin
-          clazz.delete_all(@context)
-        rescue
-          puts "couldnt delete #{clazz.name}s"
-        end
-      end
-    end
-
-    def get_context
-      @context
-    end
-  end
-
-  class ResourceProxy
-    def initialize(resource, context_provider)
-      @resource = resource
-      @context_provider = context_provider
-    end
-
-    def method_missing(*args, &block)
-      params = [@context_provider.get_context]
-      params += args.drop(1)
-      @resource.send(args.first, *params)
-    end
-
-    def load(*args)
-      ext = [@context_provider.get_context] + args
-      @resource.load(*ext)
-    end
-
-  end
 
   class AbstractResource
     extend ActiveModel::Naming
@@ -223,7 +163,9 @@ module Arrest
     def save
       if Source.skip_validations || self.valid?
         req_type = new_record? ? :post : :put
-        !!AbstractResource::source.send(req_type, @context, self)
+        success = !!AbstractResource::source.send(req_type, @context, self)
+        context.cache.update(self.id, self) if success
+        success
       else
         false
       end
@@ -233,12 +175,14 @@ module Arrest
       raise self.errors.inspect unless self.save
     end
 
+    def clone
+      self.class.new(self.context, self.to_hash)
+    end
+
     def reload
       @child_collections = {}
       @views = {}
       @belongs_tos = {}
-      @ids_collections = {}
-      @has_many_collections = {}
       hash = internal_reload
       self.attributes= hash
     end

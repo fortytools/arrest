@@ -7,7 +7,7 @@ module Arrest
       @target_class_name = target_class_name
     end
     def target_class
-      Arrest::Source.mod.const_get(@target_class_name)
+      @target_class ||= Arrest::Source.mod.const_get(@target_class_name)
     end
   end
 end

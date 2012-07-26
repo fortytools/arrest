@@ -42,21 +42,22 @@ module Arrest
       end
 
       def find(context, id)
-        if id == nil || "" == id
-          Arrest::logger.info "DocumentNotFoundError: no id given"
-          raise Errors::DocumentNotFoundError.new
-        end
+        context.cache.lookup(id) do
+          if id == nil || "" == id
+            Arrest::logger.info "DocumentNotFoundError: no id given"
+            raise Errors::DocumentNotFoundError.new
+          end
+          full_resource_path = "#{self.resource_path}/#{id}"
+          r = source().get(context, full_resource_path)
+          body = body_root(r)
+          if body == nil || body.empty?
+            Arrest::logger.info "DocumentNotFoundError for #{full_resource_path}"
+            raise Errors::DocumentNotFoundError.new
+          end
 
-        full_resource_path = "#{self.resource_path}/#{id}"
-        r = source().get(context, full_resource_path)
-        body = body_root(r)
-        if body == nil || body.empty?
-          Arrest::logger.info "DocumentNotFoundError for #{full_resource_path}"
-          raise Errors::DocumentNotFoundError.new
+          resource = self.build(context, body.merge({:id => id}))
+          resource
         end
-
-        resource = self.build(context, body.merge({:id => id}))
-        resource
       end
 
       def filter name, &aproc

@@ -1,4 +1,3 @@
-require "arrest/source"
 require 'active_model'
 
 module Arrest
