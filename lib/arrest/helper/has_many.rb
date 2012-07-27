@@ -22,8 +22,8 @@ module Arrest
           clazz_name = options[:class_name].to_s unless options[:class_name] == nil       # :Team
           foreign_key = "#{StringUtils.underscore(clazz_name)}_id"                        # team_id
           foreign_key = options[:foreign_key].to_s unless options[:foreign_key] == nil    # team_id
-          ids_method_url_part += "/" + options[:url_part].to_s unless options[:url_part] == nil # /my_team_ids + /my-url-part
-          method_url_part     += "/" + options[:url_part].to_s unless options[:url_part] == nil # /my_teams + /my-url-part
+          ids_method_url_part = "/" + options[:url_part].to_s unless options[:url_part] == nil # /my_url_part_ids
+          method_url_part     = "/" + options[:url_part].to_s unless options[:url_part] == nil # /my_url_part
           read_only = !!options[:read_only] unless options[:read_only] == nil
         end
 
