@@ -72,25 +72,6 @@ module Arrest
         end
       end
 
-      def children(*args)
-        method_name, options = args
-        method_name = method_name.to_sym
-
-        clazz_name = method_name.to_s
-        if options
-          clazz = options[:class_name]
-          if clazz
-            clazz_name = clazz.to_s
-          end
-        end
-
-        send :define_method, method_name do
-          @child_collections ||= {}
-          @child_collections[method_name] ||= ChildCollection.new(self, (StringUtils.classify(StringUtils.singular clazz_name)))
-          @child_collections[method_name]
-        end
-      end
-
       def parent(*args)
         method_name = args[0].to_s.to_sym
         class_eval "def #{method_name}; self.parent; end"

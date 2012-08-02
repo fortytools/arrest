@@ -33,7 +33,7 @@ module Arrest
         all(context,filter).first
       end
 
-      def end(context, filter={})
+      def last(context, filter={})
         all(context,filter).last
       end
 
