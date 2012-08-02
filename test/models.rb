@@ -14,12 +14,12 @@ class Zoo < Arrest::RootResource
   belongs_to :zoo_owner
 end
 
-class Animal < Arrest::RestChild
+class Animal < Arrest::RootResource
   attribute :kind, String
   attribute :age, Integer
   attribute :male, Boolean
 
-  parent :zoo
+  belongs_to :zoo
 
   scope :server_males_only
   scope(:males_only){|a| a.male}
@@ -93,11 +93,11 @@ class ParentFilter < Arrest::RootResource
   children :child_filters
 end
 
-class ChildFilter < Arrest::RestChild
+class ChildFilter < Arrest::RootResource
   attribute :id, String
   attribute :bfield, String
 
-  parent :parent_filter
+  belongs_to :parent_filter
 
   filter(:child_nnn) {|s| bfield == s}
 end
