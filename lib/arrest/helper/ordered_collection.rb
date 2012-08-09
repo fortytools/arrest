@@ -15,7 +15,6 @@ module Arrest
       @base_url = base_url
 
       @default_page = 1
-      @default_page_size = 5
 
       @page_hash = {}
       @sort_hash = {}
@@ -58,9 +57,6 @@ module Arrest
       @total_count
     end
 
-    # == for kaminari
-    # TODO: move to external module
-
     def limit_value #:nodoc:
       @page_hash[:pageSize] || 0
     end
@@ -101,12 +97,18 @@ module Arrest
       self
     end
 
+    # the id of an object in an ordered collection to start
+    # paginating from
+    def start_at(id)
+      @page_hash[:pageStartId] = id
+      self
+    end
+
     def page(num)
       @collection = nil unless @page_hash[:page] == num.to_i
 
       num ||= 1
       @page_hash[:page] = num.to_i
-      @page_hash[:pageSize] ||= @default_page_size
       self
     end
 
