@@ -4,6 +4,10 @@ module Arrest
 
     attribute :id, String
     attribute :type, String
+    
+    def self.mk_json(value)
+      {:id => value.id, :type => value.type}.to_json
+    end
   end
 
   class PolymorphicAttribute < NestedAttribute
