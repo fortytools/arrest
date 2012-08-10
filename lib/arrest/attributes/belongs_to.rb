@@ -54,12 +54,12 @@ module Arrest
             begin
               if polymorphic
                 clazz = self.class.json_type_to_class(val.type)
-                clazz.find(self.context, val.id)
+                id = val.id
               else
-                Arrest::Source.mod.const_get(class_name).find(self.context, val)
+                clazz = Arrest::Source.mod.const_get(class_name)
+                id = val
               end
-            rescue Errors::DocumentNotFoundError => e
-              raise Errors::DocumentNotFoundError, "Couldnt find a #{class_name} with id #{val}"
+              clazz.find(self.context, id)
             end
 
         end

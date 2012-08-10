@@ -7,14 +7,14 @@ module Arrest
         r = source().get(context, "#{self.resource_path}")
         body = body_root(r)
         if body == nil || body.empty?
-          Arrest::logger.info "DocumentNotFoundError for #{self.resource_path}"
-          raise Errors::DocumentNotFoundError.new
+          Arrest::logger.info "SpecifiedDocumentNotFoundError for #{self.resource_path}"
+          raise Errors::SpecifiedDocumentNotFoundError.new(nil, self.class)
         end
         self.build(context, body)
       end
 
       def find(context, id)
-        raise "A find is not possible for a  SingleResource"
+        raise "A find is not possible for a SingleResource"
       end
     end
 

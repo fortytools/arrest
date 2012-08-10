@@ -43,20 +43,21 @@ module Arrest
 
       def find(context, id)
         context.cache.lookup(id) do
-          if id == nil || "" == id
-            Arrest::logger.info "DocumentNotFoundError: no id given"
-            raise Errors::DocumentNotFoundError.new
-          end
-          full_resource_path = "#{self.resource_path}/#{id}"
-          r = source().get(context, full_resource_path)
-          body = body_root(r)
-          if body == nil || body.empty?
-            Arrest::logger.info "DocumentNotFoundError for #{full_resource_path}"
-            raise Errors::DocumentNotFoundError.new
-          end
+          begin
+            raise "Document Id must not be blank" if id == nil || "" == id
 
-          resource = self.build(context, body.merge({:id => id}))
-          resource
+            full_resource_path = "#{self.resource_path}/#{id}"
+            r = source().get(context, full_resource_path)
+            body = body_root(r)
+
+            raise "Response body must not be empty for #{full_resource_path}" if body == nil || body.empty?
+
+            resource = self.build(context, body.merge({:id => id}))
+            resource
+          rescue Exception => e
+            Arrest::logger.info e.message if e.message
+            raise Errors::SpecifiedDocumentNotFoundError.new(id, self.class)
+          end
         end
       end
 
