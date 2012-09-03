@@ -17,11 +17,11 @@ module Arrest
         end
       end
 
-      def create_and_add_attribute(field_name, polymorphic, read_only, foreign_key, class_name)
+      def create_and_add_attribute(field_name, polymorphic, actions, foreign_key, class_name)
         if polymorphic
-          add_attribute(PolymorphicAttribute.new(field_name.to_sym, read_only))
+          add_attribute(PolymorphicAttribute.new(field_name.to_sym, actions))
         else
-          add_attribute(BelongsToAttribute.new(field_name.to_sym, read_only, String, foreign_key, class_name))
+          add_attribute(BelongsToAttribute.new(field_name.to_sym, actions, String, foreign_key, class_name))
         end
       end
 
@@ -32,8 +32,9 @@ module Arrest
         foreign_key = "#{StringUtils.underscore(ClassUtils.simple_name(self))}_id"
         params = args[1] unless args.length < 2
 
+        actions = [:create, :retrieve, :update, :delete]
         if params
-          read_only =  params[:read_only] == true
+          actions = params[:actions] if params[:actions]
           polymorphic = !!params[:polymorphic]
           class_name = params[:class_name].to_s unless params[:class_name] == nil
           foreign_key = params[:foreign_key].to_s unless params[:foreign_key] == nil
@@ -41,7 +42,7 @@ module Arrest
 
         field_name = create_field_name(name, params, polymorphic)
 
-        create_and_add_attribute(field_name, polymorphic, read_only, foreign_key, class_name)
+        create_and_add_attribute(field_name, polymorphic, actions, foreign_key, class_name)
 
         send :define_method, name do
           val = self.send(field_name)
