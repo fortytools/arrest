@@ -1,3 +1,3 @@
 module Arrest
-  VERSION = "0.0.83"
+  VERSION = "0.0.83.1"
 end
