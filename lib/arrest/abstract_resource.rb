@@ -88,7 +88,7 @@ module Arrest
       def read_only_attributes(args)
         args.each_pair do |name, clazz|
           self.send :attr_accessor,name
-          add_attribute(Attribute.new(name, true, clazz))
+          add_attribute(Attribute.new(name, clazz, [:retrieve]))
         end
       end
 

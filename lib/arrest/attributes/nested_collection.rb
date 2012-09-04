@@ -1,8 +1,8 @@
 module Arrest
 
   class NestedCollection < Attribute
-    def initialize name, read_only, clazz
-      super name, read_only, clazz
+    def initialize name, clazz, options
+      super name, clazz, options
     end
 
     def from_hash(parent, value)

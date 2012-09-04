@@ -61,6 +61,9 @@ module Arrest
         end
         value = as[key]
         converted = field.from_hash(self, value)
+
+        @attribute_values[field.name.to_sym] = converted
+
         self.send(field.name.to_s + '=', converted) unless converted == nil
       end
     end
@@ -93,13 +96,16 @@ module Arrest
     end
 
 
-    def to_jhash
-      to_hash(false, true)
+    def to_jhash(action)
+      to_hash(false, true, action)
     end
 
-    def to_hash(show_all_fields = true, json_names = false)
+    def to_hash(show_all_fields = true, json_names = false, action = nil)
       result = {}
-      self.class.all_fields.find_all{|a| show_all_fields || !a.read_only}.each do |field|
+
+      self.class.all_fields.find_all{|a| show_all_fields ||
+                                         !action         ||
+                                         a.actions.include?(action)}.each do |field|
         if json_names
           json_name = field.json_name
         else
@@ -107,9 +113,8 @@ module Arrest
         end
         val = self.send(field.name)
         converted = field.to_hash val
-        if converted != nil
-          result[json_name] = converted
-        end
+
+        result[json_name] = converted
       end
       result
     end
@@ -122,8 +127,12 @@ module Arrest
       end
 
       def attribute(name, clazz, attribs = {})
-        read_only = !!attribs[:read_only]
-        add_attribute Attribute.new(name, read_only, clazz)
+        if !!attribs[:read_only] && !attribs[:actions]
+          actions = [:retrieve]
+        else
+          actions = attribs[:actions]
+        end
+        add_attribute Attribute.new(name, clazz, actions)
       end
 
       def attributes(args)
@@ -140,7 +149,6 @@ module Arrest
           Arrest::debug "setter #{self.class.name} #{attribute.name} = #{converted_v}"
           self.attribute_values[attribute.name] = converted_v
         end
-
         # define getter for attribute value
         send :define_method, "#{attribute.name}" do
           Arrest::debug "getter #{self.class.name} #{attribute.name}"
@@ -156,13 +164,11 @@ module Arrest
       end
 
       def nested name, clazz, options = {}
-        read_only = !!options[:read_only]
-        add_attribute NestedAttribute.new(name, read_only, clazz)
+        add_attribute NestedAttribute.new(name, clazz, options[:actions])
       end
 
       def nested_array name, clazz, options = {}
-        read_only = !!options[:read_only]
-        add_attribute Arrest::NestedCollection.new(name, read_only, clazz)
+        add_attribute Arrest::NestedCollection.new(name, clazz, options[:actions])
       end
     end
 

@@ -1,11 +1,20 @@
 module Arrest
   class Attribute
-    attr_accessor :name, :read_only, :clazz, :json_name
-    def initialize name, read_only, clazz
+    attr_accessor :name, :actions, :clazz, :json_name
+
+    def initialize name, clazz, actions = nil
       @name = name.to_sym
-      @read_only = read_only
+      @actions = actions || [:create, :retrieve, :update, :delete]
       @clazz = clazz
       @json_name = Source.json_key_converter.key_to_json(name).to_sym
+    end
+
+    def read_only?
+      @actions == [:retrieve]
+    end
+
+    def mutable?
+      @actions.include?(:create) || @actions.include?(:update)
     end
 
     def from_hash(parent, value)

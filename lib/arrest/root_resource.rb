@@ -130,7 +130,7 @@ module Arrest
     protected
     def internal_reload
       context.cache.remove(self.id)
-      self.class.find(self.context, self.id).to_hash
+      self.class.find(self.context, self.id).to_hash(false, false, :retrieve)
     end
   end
 end

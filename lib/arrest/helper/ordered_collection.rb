@@ -132,6 +132,7 @@ module Arrest
         url = build_url(@base_url, params)
 
         response = resolved_class.by_url(@context, url)
+
         @total_count = response[:result_count]
 
         @collection = response[:collection]

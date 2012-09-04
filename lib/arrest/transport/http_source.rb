@@ -84,8 +84,7 @@ module Arrest
 
     def put(context, rest_resource)
       raise "To change an object it must have an id" unless rest_resource.respond_to?(:id) && rest_resource.id != nil
-      hash = rest_resource.to_jhash
-      insert_nulls!(rest_resource,hash)
+      hash = rest_resource.to_jhash(:update)
       hash.delete(:id)
       hash.delete("id")
       body = JSON.generate(hash)
@@ -96,7 +95,9 @@ module Arrest
     def internal_put(rest_resource, location, body)
       profiler_status_str = ""
       ::ActiveSupport::Notifications.instrument("http.sgdb",
-                                            :method => :delete, :url => rest_resource.resource_location, :status => profiler_status_str) do
+                                                :method => :delete,
+                                                :url => rest_resource.resource_location,
+                                                :status => profiler_status_str) do
         headers = nil
         response = self.connection().put do |req|
           req.url(location)
@@ -114,26 +115,17 @@ module Arrest
       end
     end
 
-    def insert_nulls!(rest_resource, hash)
-      rest_resource.class.all_fields.each do |field|
-        changed = (!rest_resource.respond_to?("#{field.name}_changed?" || rest_resource.send("#{field}_changed?")))
-        if !field.read_only && hash[field.json_name] == nil && changed
-          hash[field.json_name] = Null.singleton
-        end
-      end
-    end
-
     def post(context, rest_resource)
       profiler_status_str = ""
       ::ActiveSupport::Notifications.instrument("http.sgdb",
-                                            :method => :post, :url => rest_resource.resource_path, :status => profiler_status_str) do
+                                                :method => :post,
+                                                :url => rest_resource.resource_path,
+                                                :status => profiler_status_str) do
         raise "new object must have setter for id" unless rest_resource.respond_to?(:id=)
         raise "new object must not have id" if rest_resource.respond_to?(:id) && rest_resource.id != nil
-        hash = rest_resource.to_jhash
+        hash = rest_resource.to_jhash(:create)
         hash.delete(:id)
         hash.delete('id')
-
-        insert_nulls!(rest_resource,hash)
 
         body = JSON.generate(hash)
         headers = nil
