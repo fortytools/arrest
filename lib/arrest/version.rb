@@ -1,3 +1,3 @@
 module Arrest
-  VERSION = "0.0.83.crud"
+  VERSION = "0.0.84"
 end
