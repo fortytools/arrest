@@ -146,6 +146,7 @@ module Arrest
         req_type = new_record? ? :post : :put
         success = !!AbstractResource::source.send(req_type, @context, self)
         self.context.cache.flush
+        self.reset_dirtiness
         success
       else
         false
@@ -166,6 +167,7 @@ module Arrest
       @belongs_tos = {}
       hash = internal_reload
       self.attributes= hash
+      self.reset_dirtiness
     end
 
     def new_record?

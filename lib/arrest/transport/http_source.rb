@@ -89,16 +89,13 @@ module Arrest
       hash.delete("id")
       body = JSON.generate(hash)
 
-      internal_put(rest_resource, rest_resource.resource_location, body)
-    end
-
-    def internal_put(rest_resource, location, body)
       profiler_status_str = ""
       ::ActiveSupport::Notifications.instrument("http.sgdb",
                                                 :method => :delete,
                                                 :url => rest_resource.resource_location,
                                                 :status => profiler_status_str) do
         headers = nil
+        location = rest_resource.resource_location
         response = self.connection().put do |req|
           req.url(location)
           headers = add_headers(rest_resource.context, req.headers)
