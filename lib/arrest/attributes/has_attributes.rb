@@ -66,6 +66,7 @@ module Arrest
 
         self.send(field.name.to_s + '=', converted) unless converted == nil
       end
+      self.reset_dirtiness
     end
 
     def reset_dirtiness
