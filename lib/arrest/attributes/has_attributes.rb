@@ -48,7 +48,7 @@ module Arrest
 
     def init_from_hash(as_i={}, from_json = false)
       raise "hash expected but got #{as_i.class}" unless as_i.is_a?(Hash)
-      @attribute_values = {} unless @attribute_values != nil
+      @attribute_values ||= {}
       as = {}
       as_i.each_pair do |k,v|
         as[k.to_sym] = v
@@ -65,6 +65,12 @@ module Arrest
         @attribute_values[field.name.to_sym] = converted
 
         self.send(field.name.to_s + '=', converted) unless converted == nil
+      end
+    end
+
+    def reset_dirtiness
+      self.class.all_fields.each do |field|
+        field.dirty = false
       end
     end
 
@@ -103,20 +109,29 @@ module Arrest
     def to_hash(show_all_fields = true, json_names = false, action = nil)
       result = {}
 
-      self.class.all_fields.find_all{|a| show_all_fields ||
-                                         !action         ||
-                                         a.actions.include?(action)}.each do |field|
-        if json_names
-          json_name = field.json_name
-        else
-          json_name = field.name
-        end
-        val = self.send(field.name)
-        converted = field.to_hash val
+      self.class.all_fields.each do |field|
 
-        result[json_name] = converted
+       if render_field_to_hash?(field, show_all_fields, action)
+
+          if json_names
+            json_name = field.json_name
+          else
+            json_name = field.name
+          end
+          val = self.send(field.name)
+          converted = field.to_hash val
+
+          result[json_name] = converted
+        end
       end
       result
+    end
+
+    # decides whether attribute field will be rendered to hash
+    # either all, or, if an CRUD action given, only those sensitive to this action
+    # and if the action is update only those being dirty
+    def render_field_to_hash?(field, show_all_fields, action)
+      show_all_fields || !action || (field.actions.include?(action) && (action != :update || field.dirty?))
     end
 
     module HasAttributesClassMethods
@@ -147,6 +162,9 @@ module Arrest
         send :define_method, "#{attribute.name}=" do |v|
           converted_v = convert(attribute, v)
           Arrest::debug "setter #{self.class.name} #{attribute.name} = #{converted_v}"
+
+          attribute.dirty = true
+
           self.attribute_values[attribute.name] = converted_v
         end
         # define getter for attribute value

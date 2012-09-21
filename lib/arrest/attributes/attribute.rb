@@ -1,11 +1,22 @@
 module Arrest
-  class Attribute
-    attr_accessor :name, :actions, :clazz, :json_name
 
-    def initialize name, clazz, actions = nil
+  module Dirty
+  end
+  Integer.send(:include, Dirty)
+  String.send(:include, Dirty)
+  Float.send(:include, Dirty)
+  Boolean.send(:include, Dirty)
+
+
+  class Attribute
+    attr_accessor :name, :actions, :clazz, :json_name, :dirty
+
+    def initialize(name, clazz, actions = nil)
       @name = name.to_sym
       @actions = actions || [:create, :retrieve, :update, :delete]
       @clazz = clazz
+      @dirty_sensitive = @clazz.ancestors.include?(Dirty)
+      @dirty = false
       @json_name = Source.json_key_converter.key_to_json(name).to_sym
     end
 
@@ -15,6 +26,14 @@ module Arrest
 
     def mutable?
       @actions.include?(:create) || @actions.include?(:update)
+    end
+
+    def dirty?
+      if @dirty_sensitive
+        @dirty
+      else
+        true # treat as 'always' dirty
+      end
     end
 
     def from_hash(parent, value)
