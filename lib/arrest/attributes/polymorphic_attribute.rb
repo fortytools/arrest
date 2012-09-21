@@ -21,11 +21,7 @@ module Arrest
 
     def from_hash(parent, value)
       return nil unless value != nil
-      if value.is_a? Hash
-        @clazz.new(value)
-      else
-        @clazz.new(value.to_hash)
-      end
+      @clazz.new(value)
     end
   end
 end

@@ -82,7 +82,7 @@ module Arrest
     def attributes=(attribute_hash = {})
       fields = self.class.all_fields
       field_names = fields.map(&:name)
-      attribute_hash.each_pair do |k,v|
+      attribute_hash.each_pair do |k, v|
         matching_fields = fields.find_all{|f| f.name.to_s == k.to_s}
         field = matching_fields.first
         if field
