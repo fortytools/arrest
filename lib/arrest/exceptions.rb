@@ -1,6 +1,13 @@
 module Arrest
   module Errors
 
+    class UnknownError  < StandardError
+      def initialize(err_obj)
+        super(err_obj)
+      end
+    end
+
+
     class DocumentNotFoundError  < StandardError
     end
 

@@ -40,8 +40,10 @@ module Arrest
         Arrest::Source.call_logger.log(rql, rsl)
         if response.env[:status] == 401
           raise Errors::PermissionDeniedError.new(response.body)
-        elsif response.env[:status] != 200
+        elsif response.env[:status] == 404
           raise Errors::DocumentNotFoundError
+        elsif response.env[:status] != 200
+          raise Errors::UnknownError.new(response.body)
         end
         profiler_status_str << response.env[:status].to_s
         response.body
