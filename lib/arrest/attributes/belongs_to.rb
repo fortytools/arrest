@@ -32,13 +32,16 @@ module Arrest
         foreign_key = "#{StringUtils.underscore(ClassUtils.simple_name(self))}_id"
         params = args[1] unless args.length < 2
 
-        actions = [:create, :retrieve, :update, :delete]
         if params
+          params[:actions] = [:retrieve] if params[:read_only] # read_only is the short form for [:retrieve]
+
           actions = params[:actions] if params[:actions]
           polymorphic = !!params[:polymorphic]
           class_name = params[:class_name].to_s unless params[:class_name] == nil
           foreign_key = params[:foreign_key].to_s unless params[:foreign_key] == nil
         end
+
+        actions ||= [:create, :retrieve, :update, :delete]
 
         field_name = create_field_name(name, params, polymorphic)
 
