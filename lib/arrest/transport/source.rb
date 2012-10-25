@@ -12,6 +12,7 @@ module Arrest
       attr_reader :source
       attr_reader :mod
       attr_reader :header_decorator
+      attr_accessor :class_loader
       attr_accessor :json_key_converter
       attr_accessor :skip_validations
       attr_accessor :error_handler
@@ -38,6 +39,12 @@ module Arrest
         end
       end
 
+
+      def load_class_from_symbol(sym)
+        self.class_loader.load(sym)
+      end
+
+
       def header_decorator=(hd=nil)
         Arrest::debug "Setting headerd to #{hd}"
         if hd == nil
@@ -50,7 +57,9 @@ module Arrest
       end
     end
   end
+
   Source.mod = nil
+  Source.class_loader = DefaultClassLoader.new
   Source.header_decorator = Handlers::HeaderDecorator
   Source.debug = false
   Source.json_key_converter = Handlers::IdentityJSONKeyConverter

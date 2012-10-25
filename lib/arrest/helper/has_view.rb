@@ -22,7 +22,7 @@ module Arrest
             r = self.class.source().get(self.context, "#{self.resource_path}/#{id}/#{method_name}")
             r = self.class.body_root(r)
 
-            Arrest::Source.mod.const_get(clazz).new(self.context, r)
+            Arrest::Source.class_loader.load.new(self.context, r)
           end
         end
       end

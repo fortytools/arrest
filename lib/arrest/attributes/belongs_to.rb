@@ -21,7 +21,7 @@ module Arrest
         if polymorphic
           add_attribute(PolymorphicAttribute.new(field_name.to_sym, actions))
         else
-          add_attribute(BelongsToAttribute.new(field_name.to_sym, actions, String, foreign_key, class_name))
+          add_attribute(BelongsToAttribute.new(field_name.to_sym, actions, :String, foreign_key, class_name))
         end
       end
 
@@ -60,7 +60,7 @@ module Arrest
                 clazz = self.class.json_type_to_class(val.type)
                 id = val.id
               else
-                clazz = Arrest::Source.mod.const_get(class_name)
+                clazz = Arrest::Source.class_loader.load(class_name)
                 id = val
               end
               clazz.find(self.context, id)

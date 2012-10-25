@@ -1,12 +1,13 @@
 module Arrest
-    class NestedAttribute < Attribute
-    def initialize name, clazz, options
-      super name, clazz, options
+  class NestedAttribute < Attribute
+
+    def initialize name, class_name, options
+      super name, class_name, options
     end
 
     def from_hash(parent, value)
       return nil unless value != nil
-      @clazz.new(parent, value)
+      self.clazz.new(parent, value)
     end
 
     def to_hash val

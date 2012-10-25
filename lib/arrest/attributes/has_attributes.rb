@@ -82,6 +82,7 @@ module Arrest
     def attributes=(attribute_hash = {})
       fields = self.class.all_fields
       field_names = fields.map(&:name)
+
       attribute_hash.each_pair do |k, v|
         matching_fields = fields.find_all{|f| f.name.to_s == k.to_s}
         field = matching_fields.first
@@ -142,13 +143,13 @@ module Arrest
         @fields = []
       end
 
-      def attribute(name, clazz, attribs = {})
+      def attribute(name, class_name, attribs = {})
         if !!attribs[:read_only] && !attribs[:actions]
           actions = [:retrieve]
         else
           actions = attribs[:actions]
         end
-        add_attribute Attribute.new(name, clazz, actions)
+        add_attribute Attribute.new(name, class_name, actions)
       end
 
       def attributes(args)
@@ -182,12 +183,12 @@ module Arrest
           self.ancestors.select{|a| a.include?(HasAttributes)}.map(&:fields).flatten.reject{|f| f == nil}
       end
 
-      def nested name, clazz, options = {}
-        add_attribute NestedAttribute.new(name, clazz, options[:actions])
+      def nested name, class_name, options = {}
+        add_attribute NestedAttribute.new(name, class_name, options[:actions])
       end
 
-      def nested_array name, clazz, options = {}
-        add_attribute Arrest::NestedCollection.new(name, clazz, options[:actions])
+      def nested_array name, class_name, options = {}
+        add_attribute Arrest::NestedCollection.new(name, class_name, options[:actions])
       end
     end
 

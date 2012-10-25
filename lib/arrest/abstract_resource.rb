@@ -16,7 +16,8 @@ module Arrest
     include HasAttributes
     include HasMany
     include HasView
-    attribute :id, String
+
+    attribute :id, :String
 
     attr_accessor :context
 

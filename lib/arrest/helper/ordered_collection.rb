@@ -155,7 +155,7 @@ module Arrest
     end
 
     def resolved_class
-      @clazz ||= Source.mod.const_get(@clazz_name)
+      @clazz ||= Source.class_loader.load(@clazz_name)
     end
 
     def define_filters

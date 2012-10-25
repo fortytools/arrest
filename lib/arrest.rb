@@ -1,6 +1,7 @@
 require 'logger'
 
 require "arrest/version"
+require "arrest/default_class_loader"
 require 'arrest/helper/logger'
 
 require "arrest/utils/class_utils.rb"
